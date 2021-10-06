@@ -1,0 +1,23 @@
+{
+  "name": "vessel-scanner",
+  "version": "1.0.0",
+  "description": "NodeJS app to upload AIS data to a database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carolina-cartography/boat-tracker.git"
+  },
+  "author": "Tomas Roy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/carolina-cartography/boat-tracker/issues"
+  },
+  "homepage": "https://github.com/carolina-cartography/boat-tracker#readme",
+  "dependencies": {
+    "ais-stream-decoder": "^2.1.2",
+    "serialport": "^9.2.4"
+  }
+}
