@@ -19,7 +19,7 @@ mongoClient.connect((err) => {
 })
 
 // Setup serial reader
-console.log(`Streaming AIS data from ${process.env.AIS_SERIAL_PORT}...`)
+console.log(`Attempting to stream AIS data from ${process.env.AIS_SERIAL_PORT}...`)
 let serialPort = new SerialPort(process.env.AIS_SERIAL_PORT, {
     baudRate: 38400
 })
@@ -53,6 +53,10 @@ serialPort.on('data', (buffer) => {
     }
 })
 serialPort.on('error', (err) => {
+    if (err.toString().includes("cannot open")) {
+        console.log(`Can't connect to ${process.env.AIS_SERIAL_PORT}!`)
+        process.exit(1)
+    }
     console.error(err)
 })
 
