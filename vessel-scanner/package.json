@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/carolina-cartography/boat-tracker#readme",
   "dependencies": {
-    "ais-stream-decoder": "^2.1.2",
+    "ggencoder": "^1.0.4",
     "serialport": "^9.2.4"
   }
 }

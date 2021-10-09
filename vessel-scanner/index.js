@@ -1,14 +1,5 @@
 const SerialPort = require('serialport')
-const AisDecoder = require('ais-stream-decoder')
-
-// Setup decoder
-const aisDecoder = new AisDecoder.default()
-aisDecoder.on('error', (error) => {
-    console.log(error)
-})
-aisDecoder.on('data', (decoded) => {
-    console.log(decoded)
-})
+const AisDecoder = require('ggencoder').AisDecode
 
 // Setup serial reader
 let serialPort = new SerialPort(process.env.SERIAL_PORT, {
@@ -16,7 +7,10 @@ let serialPort = new SerialPort(process.env.SERIAL_PORT, {
 })
 
 // Listen to serial reader
-serialPort.on('data', function (buffer) {
-    console.log(buffer.toString())
-    aisDecoder.write(buffer.toString())
+serialPort.on('data', (buffer) => {
+    var decoded = new AisDecoder(buffer.toString())
+    if (decoded.valid) console.log ('%j', decoded)
+})
+serialPort.on('error', (err) => {
+    console.error(err)
 })
