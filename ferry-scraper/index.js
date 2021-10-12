@@ -1,10 +1,10 @@
-const Puppeteer = require('puppeteer')
+const Puppeteer = require('puppeteer-core')
 const { MongoClient } = require("mongodb")
 
 const URL = "https://www.puertoricoferry.com/en/routes-schedules/ceiba-vieques/"
 
 // Validate environment variables
-const req_env = ["MONGO_HOST", "MONGO_DB", "MONGO_USER", "MONGO_PASS"]
+const req_env = ["PUPPETEER_EXEC_PATH", "MONGO_HOST", "MONGO_DB", "MONGO_USER", "MONGO_PASS"]
 for (let env of req_env) if (process.env[env] === undefined) throw(`Enviornment variable ${env} is required`)
 
 let mongoClient, db
@@ -45,7 +45,9 @@ async function scrape() {
 
         // Initialize a Puppeteer instance
         console.log("Initializing...")
-        const browser = await Puppeteer.launch()
+        const browser = await Puppeteer.launch({
+            executablePath: process.env.PUPPETEER_EXEC_PATH,
+        })
         const page = await browser.newPage()
 
         // Go to page
