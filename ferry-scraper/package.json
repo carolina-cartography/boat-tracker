@@ -9,6 +9,7 @@
   "author": "Tomas Roy",
   "license": "ISC",
   "dependencies": {
+    "mongodb": "^4.1.3",
     "puppeteer": "^10.4.0"
   }
 }
