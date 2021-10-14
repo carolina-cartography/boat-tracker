@@ -47,13 +47,14 @@ async function scrape() {
         console.log("Initializing...")
         const browser = await Puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXEC_PATH,
-            args: ['--no-sandbox']
+            args: ['--no-sandbox', '--disable-gpu']
         })
         const page = await browser.newPage()
 
         // Go to page
         console.log("Loading page...")
-        await page.goto(URL)
+        await page.setDefaultNavigationTimeout(90000)
+        page.goto(URL)
 
         // Wait for Hornblower GraphQL request response
         console.log("Waiting for GraphQL responses...")
