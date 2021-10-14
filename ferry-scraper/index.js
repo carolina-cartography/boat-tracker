@@ -47,6 +47,7 @@ async function scrape() {
         console.log("Initializing...")
         const browser = await Puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXEC_PATH,
+            args: ['--no-sandbox']
         })
         const page = await browser.newPage()
 
