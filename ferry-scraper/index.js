@@ -71,7 +71,7 @@ async function scrape() {
                     return true
                 }
             }
-        })
+        }, { timeout: 120000 })
     } catch(err) {
         console.error(err)
         process.exit(1)
