@@ -3,14 +3,14 @@ const AisDecoder = require('ggencoder').AisDecode
 const { MongoClient } = require("mongodb")
 
 // Validate environment variables
-const req_env = ["MONGO_HOST", "MONGO_DB", "MONGO_USER", "MONGO_PASS", "AIS_SERIAL_PORT"]
+const req_env = ["MONGO_HOST", "MONGO_NAME", "MONGO_USER", "MONGO_PASS", "AIS_SERIAL_PORT"]
 for (let env of req_env) if (process.env[env] === undefined) throw(`Enviornment variable ${env} is required`)
 
 // Setup Mongo client
 let db;
 console.log("Connecting to database...")
 let mongoClient = new MongoClient(
-    `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}`
+    `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@${process.env.MONGO_HOST}/${process.env.MONGO_NAME}`
 )
 mongoClient.connect((err) => {
     if (err) throw(err)

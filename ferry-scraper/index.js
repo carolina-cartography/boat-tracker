@@ -4,7 +4,7 @@ const { MongoClient } = require("mongodb")
 const URL = "https://www.puertoricoferry.com/en/routes-schedules/ceiba-vieques/"
 
 // Validate environment variables
-const req_env = ["PUPPETEER_EXEC_PATH", "MONGO_HOST", "MONGO_DB", "MONGO_USER", "MONGO_PASS"]
+const req_env = ["PUPPETEER_EXEC_PATH", "MONGO_HOST", "MONGO_NAME", "MONGO_USER", "MONGO_PASS"]
 for (let env of req_env) if (process.env[env] === undefined) throw(`Enviornment variable ${env} is required`)
 
 let mongoClient, db
@@ -12,7 +12,7 @@ function mongoConnect() {
     return new Promise((resolve, reject) => {
         console.log("Connecting to database...")
         mongoClient = new MongoClient(
-            `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}`
+            `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@${process.env.MONGO_HOST}/${process.env.MONGO_NAME}`
         )
         mongoClient.connect((err) => {
             if (err) throw(err)
