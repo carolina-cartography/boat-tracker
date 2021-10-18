@@ -2,10 +2,15 @@ const Puppeteer = require('puppeteer-core')
 const { MongoClient } = require("mongodb")
 
 const URL = "https://www.puertoricoferry.com/en/routes-schedules/ceiba-vieques/"
+const DEFAULT_PAGE_TIMEOUT = 90000
+const DEFAULT_RESPONSE_TIMEOUT = 150000
 
 // Validate environment variables
 const req_env = ["PUPPETEER_EXEC_PATH", "MONGO_HOST", "MONGO_NAME", "MONGO_USER", "MONGO_PASS"]
 for (let env of req_env) if (process.env[env] === undefined) throw(`Enviornment variable ${env} is required`)
+
+let pageTimeout = process.env.PAGE_TIMEOUT !== undefined ? parseInt(process.env.PAGE_TIMEOUT, 10) : DEFAULT_PAGE_TIMEOUT
+let responseTimeout = process.env.RESPONSE_TIMEOUT !== undefined ? parseInt(process.env.RESPONSE_TIMEOUT, 10) : DEFAULT_RESPONSE_TIMEOUT
 
 let mongoClient, db
 function mongoConnect() {
@@ -53,7 +58,7 @@ async function scrape() {
 
         // Go to page
         console.log("Loading page...")
-        await page.setDefaultNavigationTimeout(90000)
+        await page.setDefaultNavigationTimeout(pageTimeout)
         page.goto(URL)
 
         // Wait for Hornblower GraphQL request response
@@ -71,7 +76,7 @@ async function scrape() {
                     return true
                 }
             }
-        }, { timeout: 120000 })
+        }, { timeout: responseTimeout })
     } catch(err) {
         console.error(err)
         process.exit(1)
