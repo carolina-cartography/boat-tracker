@@ -1,6 +1,5 @@
 const Express = require('express')
 const Morgan = require('morgan')
-const { serverError } = require('../../interactive-map/api/tools/Secretary.js')
 const Backend = require('./backend.js')
 
 // Validate environment variables

@@ -9,6 +9,9 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
+        <!-- Other Plugins -->
+        <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +22,21 @@
         <script src="main.js"></script>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <div class="map">
+            <div id="leaflet"></div>
+        </div>
+        <div class="sidebar">
+            <div class="stats"></div>
+            <div class="trips">
+                <div class="list">
+                    <h2>Next Departure</h2>
+                    <div id="upcoming-trips"></div>
+                </div>
+                <div class="list">
+                    <h2>Past Departures</h2>
+                    <div id="past-trips"></div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

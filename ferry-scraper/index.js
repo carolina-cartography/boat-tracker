@@ -21,7 +21,7 @@ function mongoConnect() {
         )
         mongoClient.connect((err) => {
             if (err) throw(err)
-            db = mongoClient.db(process.env.MONGO_DB)
+            db = mongoClient.db(process.env.MONGO_NAME)
             console.log("Connected to database!")
             resolve()
         })
