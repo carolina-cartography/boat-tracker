@@ -2,6 +2,14 @@ const Express = require('express')
 const BodyParser = require('body-parser')
 const Cors = require('cors')
 
+async function getBoats(req, res) {
+	res.send('get boats!')
+}
+
+async function getTrips(req, res) {
+	res.send('get trips!')
+}
+
 module.exports = {
 	setup: async (server) => {
 
@@ -18,12 +26,9 @@ module.exports = {
 		router.use(Cors())
 		router.options('*', Cors())
 
-		// Set root route, configure router
+		// Setup routes
 		router.get('/', (req, res) => res.send('Welcome to the Boat Tracker backend'))
-
-		// Middleware: Handle errors
-		router.use((err, req, res, next) => {
-			if (!err) return next();
-		})
+		router.get('/boats', getBoats)
+		router.get('/trips', getTrips)
 	}
 }

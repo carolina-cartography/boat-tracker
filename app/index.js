@@ -1,5 +1,6 @@
 const Express = require('express')
 const Morgan = require('morgan')
+const { serverError } = require('../../interactive-map/api/tools/Secretary.js')
 const Backend = require('./backend.js')
 
 // Validate environment variables
@@ -17,8 +18,13 @@ async function start() {
 
     // Setup frontend routes
     server.use(Express.static('public'))
-    server.get('*', function (req, res) {
+    server.get('/', function (req, res) {
         res.sendFile('./public/index.html', {root: "."})
+    })
+
+    // Setup 404
+    server.use(function (req, res, next) {
+        res.status(404).send("404 Not Found")
     })
 
     // Listen on port
