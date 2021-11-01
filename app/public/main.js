@@ -33,30 +33,24 @@ function getHTMLForTrips(items, past) {
     let html = "";
     for (let item of items) {
 
-        // Get components
-        let date = new Date(item.date)
-        let port = item.direction === "outbound" ? "Vieques" : "Ceiba";
+        let port = item.direction === "outbound" ? "Vieques" : "Ceiba"
 
-        // Add HTML
         html += "<div class='trip'>"
             html += "<div><span class='title'>Time</span>" + dayjs(item.date).format("MM/DD hh:mma") + "</div>"
             html += "<div><span class='title'>Port</span>" + port + "</div>"
             html += "<div><span class='title'>Vessel</span>" + item.vessel + "</div>"
         html += "</div>"
-
-        // Only show one for upcoming
-        if (!past) return html
     }
     return html
 }
 
 function loadTrips() {
-    $.ajax('/api/past-trips', {
+    $.ajax('/api/past-trips?limit=10', {
         success: (response) => {
             $("#past-trips").html(getHTMLForTrips(response.items, true))
         }
     })
-    $.ajax('/api/upcoming-trips', {
+    $.ajax('/api/upcoming-trips?limit=1', {
         success: (response) => {
             $("#upcoming-trips").html(getHTMLForTrips(response.items, false))
         }

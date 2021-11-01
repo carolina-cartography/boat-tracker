@@ -1,16 +1,33 @@
-const Puppeteer = require('puppeteer-core')
 const { MongoClient } = require("mongodb")
+const Fetch = require('node-fetch')
+const Moment = require('moment')
 
-const URL = "https://www.puertoricoferry.com/en/routes-schedules/ceiba-vieques/"
 const DEFAULT_PAGE_TIMEOUT = 90000
 const DEFAULT_RESPONSE_TIMEOUT = 150000
 
-// Validate environment variables
-const req_env = ["PUPPETEER_EXEC_PATH", "MONGO_HOST", "MONGO_NAME", "MONGO_USER", "MONGO_PASS"]
-for (let env of req_env) if (process.env[env] === undefined) throw(`Enviornment variable ${env} is required`)
+const URL = "https://my.hornblower.com/graphql"
+const QUERYJSON = {
+    "operationName":"ticketAvailabilityV2",
+    "variables":{
+       "propertyId":"hpurico",
+       "bookingType":1,
+       "correlationId":"152d4456-f0f2-4ef4-b151-59dbf04f0661",
+       "costRateId":1,
+       "withTourResources":true,
+       "source":"web",
+       "withPricelistTemplates":false,
+       "withTicketsDataHash":true,
+       "withVacancies":true,
+       "skipFiltersForPastTransfers":false,
+       "editOrder":false,
+       "requiredQty":0
+    },
+    "query":"query ticketAvailabilityV2($propertyId: String!, $bookingType: String!, $date: String!, $correlationId: String!, $costRateId: Int, $token: String, $withTourResources: Boolean!, $withPricelistTemplates: Boolean!, $source: String, $tourEventId: Int, $tourEventIds: [Int], $withTicketsDataHash: Boolean!, $parentOrder: String, $withVacancies: Boolean!, $skipFiltersForPastTransfers: Boolean, $editOrder: Boolean, $requiredQty: Int) {\n  ticketAvailabilityV2(propertyId: $propertyId, bookingType: $bookingType, date: $date, correlationId: $correlationId, costRateId: $costRateId, token: $token, source: $source, tourEventId: $tourEventId, tourEventIds: $tourEventIds, withTicketsDataHash: $withTicketsDataHash, parentOrder: $parentOrder, skipFiltersForPastTransfers: $skipFiltersForPastTransfers, editOrder: $editOrder, requiredQty: $requiredQty) {\n    productInfo(propertyId: $propertyId, correlationId: $correlationId) {\n      id\n      productId\n      trackingLabel\n      pairedProducts\n      pairedProductsMinQuantity\n      dependentProducts\n      settings {\n        id\n        value\n        __typename\n      }\n      translations {\n        id\n        values {\n          id\n          value\n          __typename\n        }\n        __typename\n      }\n      media {\n        type\n        url\n        __typename\n      }\n      __typename\n    }\n    stops(propertyId: $propertyId, correlationId: $correlationId) {\n      id\n      name\n      stopNumber\n      __typename\n    }\n    pricelistTemplates(propertyId: $propertyId, correlationId: $correlationId) @include(if: $withPricelistTemplates) {\n      tourEventId\n      templates {\n        templateName\n        productIds\n        __typename\n      }\n      __typename\n    }\n    ticketsDataHashes {\n      hashId\n      ticketsData {\n        TicketId\n        TicketPrice\n        IsTaxInclusive\n        TaxPercentage\n        Taxes {\n          TaxName\n          TaxPercentage\n          TaxIncluded\n          __typename\n        }\n        TicketDescription\n        AvailableOnline\n        SortOrder\n        TourProductClass\n        TourProductSubclass\n        availability\n        availabilityPool\n        AffectsCapacity\n        packageInfo\n        advertisedPrice\n        ProductTypes {\n          id\n          value\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    vacancies(propertyId: $propertyId, correlationId: $correlationId, source: $source, costRateId: $costRateId) @include(if: $withVacancies) {\n      tourEventId\n      vacancies {\n        id\n        value\n        __typename\n      }\n      channelVacancy\n      __typename\n    }\n    ticketAvailability {\n      vacancies @include(if: $withVacancies)\n      eventTimes {\n        startTime\n        endTime\n        docksideDateTime\n        endDocksideDateTime\n        sailDateTime\n        dockDateTime\n        disembarkDateTime\n        outDateTime\n        inUseDateTime\n        __typename\n      }\n      note\n      accountingFreeze\n      BookingTypeId\n      BookingTypeDescription\n      TimedTicketTypeId\n      TimedTicketTypeDescription\n      StartDate\n      StartTime\n      EndTime\n      boardingTime\n      vacancy\n      onHold\n      Capacity\n      pricing\n      fromStopId\n      toStopId\n      numberOfStop\n      duration\n      eventStatus\n      peakHours\n      eventRank\n      ticketsDataHash\n      ticketsData {\n        TicketId\n        TicketPrice\n        IsTaxInclusive\n        TaxPercentage\n        Taxes {\n          TaxName\n          TaxPercentage\n          TaxIncluded\n          __typename\n        }\n        TicketDescription\n        AvailableOnline\n        SortOrder\n        TourProductClass\n        TourProductSubclass\n        availability\n        availabilityPool\n        AffectsCapacity\n        packageInfo\n        advertisedPrice\n        ProductTypes {\n          id\n          value\n          __typename\n        }\n        __typename\n      }\n      tourResources(propertyId: $propertyId, correlationId: $correlationId) @include(if: $withTourResources) {\n        ResourceName\n        vesselId\n        deckId\n        availableForGroups\n        availableForIndy\n        deckName\n        defaultForGroups\n        defaultForIndy\n        vessel(propertyId: $propertyId) {\n          details {\n            id\n            value\n            __typename\n          }\n          __typename\n        }\n        vesselName\n        __typename\n      }\n      meetingPoint {\n        meetingPoint\n        meetingPointCoordinates\n        meetingLocalDateTime\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
+}
 
-let pageTimeout = process.env.PAGE_TIMEOUT !== undefined ? parseInt(process.env.PAGE_TIMEOUT, 10) : DEFAULT_PAGE_TIMEOUT
-let responseTimeout = process.env.RESPONSE_TIMEOUT !== undefined ? parseInt(process.env.RESPONSE_TIMEOUT, 10) : DEFAULT_RESPONSE_TIMEOUT
+// Validate environment variables
+const req_env = ["MONGO_HOST", "MONGO_NAME", "MONGO_USER", "MONGO_PASS"]
+for (let env of req_env) if (process.env[env] === undefined) throw(`Enviornment variable ${env} is required`)
 
 let mongoClient, db
 function mongoConnect() {
@@ -42,44 +59,30 @@ function mongoInsert(doc) {
 
 async function scrape() {
 
-    // Initialize placeholder for ferry data
-    let metadata;
+    let metadata
 
-    // Get data using Puppeteer
+    // Setup query
+    let date = Moment().format("MM/DD/YY")
+    console.log(`Querying ferries for ${date}`)
+    let query = QUERYJSON
+    query.variables.date = date
+
+    // Make GraphQL request
     try {
-
-        // Initialize a Puppeteer instance
-        console.log("Initializing...")
-        const browser = await Puppeteer.launch({
-            executablePath: process.env.PUPPETEER_EXEC_PATH,
-            args: ['--no-sandbox', '--disable-gpu']
-        })
-        const page = await browser.newPage()
-
-        // Go to page
-        console.log("Loading page...")
-        await page.setDefaultNavigationTimeout(pageTimeout)
-        page.goto(URL)
-
-        // Wait for Hornblower GraphQL request response
-        console.log("Waiting for GraphQL responses...")
-        await page.waitForResponse(async res => {
-
-            // Filter responses for Hownblower GraphQL
-            if (res.url().includes("my.hornblower.com/graphql")) {
-                let json = await res.json()
-
-                // When TicketAvailability response is received, save and exit
-                if (json.data && json.data.ticketAvailabilityV2) {
-                    console.log('GraphQL data downloaded!')
-                    metadata = json.data.ticketAvailabilityV2
-                    return true
-                }
-            }
-        }, { timeout: responseTimeout })
-    } catch(err) {
+        console.log("Making GraphQL request...")
+        let response = await Fetch(URL, {"method": "POST", "body": JSON.stringify(query), "mode": "cors"})
+        let json = await response.json()
+        metadata = json.data.ticketAvailabilityV2
+        console.log("Done!")
+    } catch (err) {
         console.error(err)
         process.exit(1)
+    }
+
+    // Don't parse if list empty
+    if (metadata.ticketAvailability.length < 1) {
+        console.log("No trips for date")
+        process.exit(0)
     }
 
     // Get required stop IDs

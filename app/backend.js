@@ -23,10 +23,14 @@ async function getBoats(req, res) {
 	res.send('get boats!')
 }
 
+function getLimit(req) {
+	return req.query.limit !== undefined ? parseInt(req.query.limit, 10) : 10
+}
+
 async function getUpcomingTrips(req, res) {
 	db.collection("trips").find({
 		"startTime" : { $gte: Date.now() / 1000 }
-	}).sort({ "startTime": 1 }).limit(2).toArray((err, items) => {
+	}).sort({ "startTime": 1 }).limit(getLimit(req)).toArray((err, items) => {
 		if (err) {
 			return res.status(500).send(err)
 		}
@@ -37,7 +41,7 @@ async function getUpcomingTrips(req, res) {
 async function getPastTrips(req, res) {
 	db.collection("trips").find({
 		"startTime" : { $lt: Date.now() / 1000 }
-	}).sort({ "startTime": -1 }).limit(10).toArray((err, items) => {
+	}).sort({ "startTime": -1 }).limit(getLimit(req)).toArray((err, items) => {
 		if (err) {
 			return res.status(500).send(err)
 		}

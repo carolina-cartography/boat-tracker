@@ -1,4 +1,3 @@
-FROM minicreative/alpine-node-chromium
-ENV PUPPETEER_EXEC_PATH=/usr/bin/chromium-browser
+FROM node:12-alpine
 WORKDIR /ferry-scraper
 ADD . /ferry-scraper
