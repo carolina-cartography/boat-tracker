@@ -1,0 +1,26 @@
+os: linux
+dist: focals
+
+branches:
+  only:
+  - main
+
+services:
+- docker
+
+install:
+- sudo snap install kubectl --classic
+
+script: ./build.sh $TRAVIS_COMMIT_MESSAGE
+
+before_deploy:
+- mkdir ${HOME}/.kube
+- echo "$KUBECONFIG_ENC" | base64 --decode > ${HOME}/.kube/config
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: ./deploy.sh $TRAVIS_COMMIT_MESSAGE
+  on:
+    branch: main
