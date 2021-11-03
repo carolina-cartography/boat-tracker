@@ -2,9 +2,6 @@ const { MongoClient } = require("mongodb")
 const Fetch = require('node-fetch')
 const Moment = require('moment')
 
-const DEFAULT_PAGE_TIMEOUT = 90000
-const DEFAULT_RESPONSE_TIMEOUT = 150000
-
 const URL = "https://my.hornblower.com/graphql"
 const QUERYJSON = {
     "operationName":"ticketAvailabilityV2",
@@ -46,13 +43,19 @@ function mongoConnect() {
 }
 function mongoInsert(doc) {
     return new Promise((resolve, reject) => {
-        console.log("Inserting document...")
-        db.collection("trips").insertOne(doc).then(result => {
-            console.log("Document inserted")
-            resolve()
-        }).catch(err => {
-            console.error(err)
-            resolve() // Don't reject on error for now
+        db.collection("trips").findOne({ id: doc.id }).then(result => {
+            if (result === null) {
+                db.collection("trips").insertOne(doc).then(result => {
+                    console.log(`Inserted doc ${doc.id}`)
+                    resolve()
+                }).catch(err => {
+                    console.error(err)
+                    resolve() // Don't reject on error for now
+                })
+            } else {
+                console.log(`Doc ${doc.id} already exists`)
+                resolve()
+            }
         })
     })
 }
@@ -103,14 +106,20 @@ async function scrape() {
             trip.fromStopId === viequesStopID && trip.toStopId === ceibaStopID ||
             trip.fromStopId === ceibaStopID && trip.toStopId === viequesStopID
         ) {
+            let vesselName = trip.tourResources[0] !== undefined ? trip.tourResources[0].ResourceName : 'unnamed'
+            let vesselId = vesselName.trim().toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s/g, '-')
+            let id = vesselId + '-' + trip.StartDate
             let formattedTrip = {
+                id,
+                vesselId,
                 direction: trip.fromStopId === ceibaStopID ? 'inbound' : 'outbound',
                 date: trip.StartDate,
                 boardingTime: trip.boardingTime,
                 startTime: trip.eventTimes.startTime,
                 endTime: trip.eventTimes.endTime,
-                vessel: trip.tourResources[0] !== undefined ? trip.tourResources[0].ResourceName : null,
+                vessel: vesselName,
             }
+            console.log(`Processed trip ${id}`)
             formattedTrips.push(formattedTrip)
         }
     }
