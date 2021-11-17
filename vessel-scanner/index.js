@@ -26,11 +26,11 @@ let serialPort = new SerialPort(process.env.AIS_SERIAL_PORT, {
 
 // Listen to serial reader
 serialPort.on('data', (buffer) => {
-    console.log(`\nAIS packet received ${buffer.toString().replace("\n", "")}`)
+    let packet = buffer.toString().replace("\n", "")
 
     // Attempt to decode packet
     var decoded = new AisDecoder(buffer.toString())
-    if (!decoded.valid) return console.error("Invalid packet")
+    if (!decoded.valid) return console.error(`Received ${packet}, invalid`)
 
     // Attempt to write relevant entries to database
     // TODO: Refine filter (only log entries from boats we care about?)
@@ -44,11 +44,12 @@ serialPort.on('data', (buffer) => {
                 coordinates: [decoded.lon, decoded.lat]
             },
             status: decoded.navstatus,
-            speed: decoded.sog
+            speed: decoded.sog,
+            test: 'test'
         }).then(result => {
-            console.log(`Saved entry for ${decoded.mmsi} in database`)
+            console.log(`Received ${packet}, saved entry for ${decoded.mmsi} in database`)
         }).catch(err => {
-            console.error(err)
+            console.error(`Database error: ${err}`)
         })
     }
 })
