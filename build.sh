@@ -11,7 +11,7 @@ elif [[ "$1" == *"vessel-scanner"* ]]; then
     chmod a+x ~/.docker/cli-plugins/docker-buildx
     docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     docker buildx create --name xbuilder --use
-    docker buildx build --platform linux/arm/v7 --push --tag minicreative/vessel-scanner:latest ./vessel-scanner
+    docker buildx build --platform linux/arm/v7 --tag "minicreative/vessel-scanner:latest" --push ./vessel-scanner
 elif [[ "$1" == *"app"* ]]; then
     echo "Building app..."
     docker build -t "minicreative/boat-tracker:$TRAVIS_BUILD_NUMBER" ./app
