@@ -1,3 +1,4 @@
+#!/bin/bash
 if [[ "$1" == *"ferry-scraper"* ]]; then
     echo "Deploying ferry-scraper..."
     docker image push --all-tags minicreative/ferry-scraper

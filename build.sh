@@ -1,3 +1,4 @@
+#!/bin/bash
 if [[ "$1" == *"ferry-scraper"* ]]; then
     echo "Building ferry-scraper..."
     docker build -t "minicreative/ferry-scraper:$TRAVIS_BUILD_NUMBER" ./ferry-scraper
