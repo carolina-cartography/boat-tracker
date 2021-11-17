@@ -3,6 +3,7 @@ if [[ "$1" == *"ferry-scraper"* ]]; then
     echo "Building ferry-scraper..."
     docker build -t "minicreative/ferry-scraper:$TRAVIS_BUILD_NUMBER" ./ferry-scraper
     docker tag minicreative/ferry-scraper:$TRAVIS_BUILD_NUMBER minicreative/ferry-scraper:latest
+    docker push --all-tags minicreative/ferry-scraper
 elif [[ "$1" == *"vessel-scanner"* ]]; then
     echo "Building vessel-scanner..."
     mkdir -vp ~/.docker/cli-plugins/
@@ -11,10 +12,12 @@ elif [[ "$1" == *"vessel-scanner"* ]]; then
     docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     docker buildx create --name xbuilder --use
     docker buildx build --platform linux/arm/v7 -t minicreative/vessel-scanner:latest ./vessel-scanner
+    docker push minicreative/vessel-scanner:latest
 elif [[ "$1" == *"app"* ]]; then
     echo "Building app..."
     docker build -t "minicreative/boat-tracker:$TRAVIS_BUILD_NUMBER" ./app
     docker tag minicreative/boat-tracker:$TRAVIS_BUILD_NUMBER minicreative/boat-tracker:latest
+    docker push --all-tags minicreative/boat-tracker
 else
     echo "No matching build"
 fi
