@@ -2,6 +2,7 @@ const Express = require('express')
 const BodyParser = require('body-parser')
 const Cors = require('cors')
 const { MongoClient } = require("mongodb")
+const Static = require('./static.js')
 
 let mongoClient, db;
 async function setupDatabase() {
@@ -49,6 +50,14 @@ async function getPastTrips(req, res) {
 	});
 }
 
+async function getMMSIList(req, res) {
+	let mmsiArray = []
+	for (let key of Object.keys(Static.MMSI_LIBRARY)) {
+		mmsiArray.push(Static.MMSI_LIBRARY[key])
+	}
+	res.status(200).json(mmsiArray)
+}
+
 module.exports = {
 	setup: async (server) => {
 
@@ -70,6 +79,7 @@ module.exports = {
 
 		// Setup routes
 		router.get('/', (req, res) => res.send('Welcome to the Boat Tracker backend'))
+		router.get('/mmsi-list', getMMSIList)
 		router.get('/boats', getBoats)
 		router.get('/upcoming-trips', getUpcomingTrips)
 		router.get('/past-trips', getPastTrips)
