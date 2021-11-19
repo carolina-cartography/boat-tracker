@@ -29,7 +29,8 @@ serialPort.on('data', (buffer) => {
     let packet = buffer.toString().replace("\n", "")
 
     // Attempt to decode packet
-    var decoded = new AisDecoder(buffer.toString())
+    let session = {}
+    let decoded = new AisDecoder(buffer.toString(), session)
     if (!decoded.valid) return console.error(`Received ${packet}, invalid`)
 
     // Attempt to write relevant entries to database
