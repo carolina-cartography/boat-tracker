@@ -102,13 +102,36 @@ async function scrape() {
     // Iterate through trips
     let formattedTrips = []
     for (let trip of metadata.ticketAvailability) {
+
+        // Include only ferries to and from Vieques
         if (
             trip.fromStopId === viequesStopID && trip.toStopId === ceibaStopID ||
             trip.fromStopId === ceibaStopID && trip.toStopId === viequesStopID
         ) {
-            let vesselName = trip.tourResources[0] !== undefined ? trip.tourResources[0].ResourceName : 'unnamed'
+            let resource = trip.tourResources[0]
+
+            // Don't handle ferries without ship data
+            if (
+                resource === undefined ||
+                resource.vessel === undefined ||
+                resource.vessel.details === undefined
+            ) continue
+
+            // Exclude ferries marked as cargo-only
+            let cargoOnly = false
+            for (let detail of resource.vessel.details) {
+                if (detail.id === 'vesselType' && detail.value === 'cargoOnly') {
+                    cargoOnly = true
+                    break
+                }
+            }
+            if (cargoOnly) continue
+
+            // Create ship and trip identifiers
+            let vesselName = resource.ResourceName
             let vesselId = vesselName.trim().toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s/g, '-')
             let id = vesselId + '-' + trip.StartDate
+            
             let formattedTrip = {
                 id,
                 vesselId,
@@ -119,8 +142,10 @@ async function scrape() {
                 endTime: trip.eventTimes.endTime,
                 vessel: vesselName,
             }
-            console.log(`Processed trip ${id}`)
+
             formattedTrips.push(formattedTrip)
+
+            console.log(`Processed trip ${id}`)
         }
     }
 
