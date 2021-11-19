@@ -62,8 +62,6 @@ function mongoInsert(doc) {
 
 async function scrape() {
 
-    let metadata
-
     // Setup query
     let date = Moment().format("MM/DD/YY")
     console.log(`Querying ferries for ${date}`)
@@ -71,6 +69,7 @@ async function scrape() {
     query.variables.date = date
 
     // Make GraphQL request
+    let metadata
     try {
         console.log("Making GraphQL request...")
         let response = await Fetch(URL, {"method": "POST", "body": JSON.stringify(query), "mode": "cors"})
