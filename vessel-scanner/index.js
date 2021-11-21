@@ -7,6 +7,11 @@ const Fetch = require("node-fetch")
 const req_env = ["MONGO_HOST", "MONGO_NAME", "MONGO_USER", "MONGO_PASS", "AIS_SERIAL_PORT"]
 for (let env of req_env) if (process.env[env] === undefined) throw(`Enviornment variable ${env} is required`)
 
+// Print version in the logs
+setInterval(() => {
+    console.log(`vessel-scanner version ${process.env.VESSEL_SCANNER_VERSION}`)
+}, 10000)
+
 // Get MMSI list ============================================
 let mmsiMap = {}
 async function getMMSIList() {
