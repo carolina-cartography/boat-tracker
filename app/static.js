@@ -5,6 +5,7 @@ const MMSI_LIBRARY = {
     "lady-eve": "367179790",
     "breezy-point": "368037610",
     "straits-express": "368054610",
+    "summer-wind": "368038080"
 }
 
 exports.MMSI_LIBRARY = MMSI_LIBRARY
