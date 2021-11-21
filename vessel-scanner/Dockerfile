@@ -1,4 +1,5 @@
 FROM node:12-alpine
+ARG vessel_scanner_version=not_provided
 ENV VESSEL_SCANNER_VERSION=$vessel_scanner_version
 WORKDIR /vessel-scanner
 ADD . /vessel-scanner
