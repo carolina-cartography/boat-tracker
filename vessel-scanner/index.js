@@ -14,13 +14,16 @@ async function getMMSIList() {
     try {
         let mmsiResponse = await Fetch("https://boat-tracker.carolinacartography.org/api/mmsi-list")
         mmsiList = await mmsiResponse.json()
-        for (var mmsi of mmsiList) mmsiMap[mmsi] = true
+        let newMmsiMap = {}
+        for (var mmsi of mmsiList) newMmsiMap[mmsi] = true
+        mmsiMap = newMmsiMap
         console.log(`Fetched MMSI list: ${mmsiList}`)
     } catch (err) {
         console.error(`Could not get MMSI list: ${err}`)
     }
 }
 getMMSIList()
+setInterval(getMMSIList, 10*60*1000)
 
 // Setup Mongo client ========================================
 let db;
