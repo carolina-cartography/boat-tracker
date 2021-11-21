@@ -1,6 +1,7 @@
 const Express = require('express')
 const BodyParser = require('body-parser')
 const Cors = require('cors')
+const Async = require('async')
 const { MongoClient } = require("mongodb")
 const Static = require('./static.js')
 
@@ -20,8 +21,23 @@ async function setupDatabase() {
     })
 }
 
-async function getBoats(req, res) {
-	res.send('get boats!')
+function getBoats(req, res) {
+	let latestData = [];
+	Async.each(Object.keys(Static.MMSI_LIBRARY), (key, callback) => {
+		let mmsi = Static.MMSI_LIBRARY[key]
+		db.collection("ais").find({ "mmsi": mmsi }).sort({ "timestamp": -1 }).limit(1).toArray((err, items) => {
+			if (err) return res.status(500).send(err)
+			if (items.length > 0) {
+				let item = items[0]
+				item.vesselName = Static.VESSEL_NAMES[key]
+				latestData.push(item)
+			}
+			callback()
+		});
+	}, (err) => {
+		if (err) return res.status(500).send(err)
+		res.status(200).json(latestData)
+	})
 }
 
 function getLimit(req) {
