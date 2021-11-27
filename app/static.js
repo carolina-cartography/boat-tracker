@@ -4,17 +4,18 @@ const MMSI_LIBRARY = {
     "mr-row": "367495520",
     "lady-eve": "367179790",
     "straits-express": "368054610",
-    "summer-wind": "368038080"
+    "summer-wind": "368038080",
+    "isleno": "367617270"
 }
 
 const VESSEL_NAMES = {
-    "breezy-point": "Breezy Point",
     "mr-mason": "Mr. Mason",
     "mr-row": "Mr. Row",
     "lady-eve": "Lady Eve",
     "breezy-point": "Breezy Point",
     "straits-express": "Straits Express",
-    "summer-wind": "Summer Wind"
+    "summer-wind": "Summer Wind",
+    "isleno": "Isleño"
 }
 
 exports.MMSI_LIBRARY = MMSI_LIBRARY
