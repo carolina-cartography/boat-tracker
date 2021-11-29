@@ -75,7 +75,7 @@ function updateMapMarkers(aisArray) {
         let marker = L.marker([ais.location.coordinates[1], ais.location.coordinates[0]])
         let popupText = `<b>${ais.vesselName}</b>`
         popupText += `<br />Speed: ${ais.speed} knots`
-        popupText += `<br />Updated ${dayjs(ais.timestamp).format("h:ma")}`
+        popupText += `<br />Updated ${dayjs(ais.timestamp).format("hh:mma")}`
         marker.bindPopup(popupText, {
             closeButton: false,
             autoClose: false,
