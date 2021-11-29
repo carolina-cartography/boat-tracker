@@ -5,10 +5,12 @@ let map, markers
 
 $(document).ready(() => {
     dayjs.extend(window.dayjs_plugin_relativeTime)
+    dayjs.extend(window.dayjs_plugin_utc)
+    dayjs.extend(window.dayjs_plugin_timezone)
 
 	initializeMap()
     load()
-    setInterval(load, 15000)
+    setInterval(load, 60000)
 })
 
 function initializeMap() {
@@ -51,6 +53,7 @@ function getHTMLForTrips(items, past) {
             html += "<div><span class='title'>Time</span>" + dayjs(item.date).format("MM/DD hh:mma") + "</div>"
             html += "<div><span class='title'>Port</span>" + port + "</div>"
             html += "<div><span class='title'>Vessel</span>" + item.vessel + "</div>"
+            if (item.timeInMotion) html += "<div><span class='title'>Departure</span>" + dayjs(item.timeInMotion).tz("America/Puerto_Rico").format("hh:mma") + "</div>"
         html += "</div>"
     }
     return html
@@ -59,12 +62,12 @@ function getHTMLForTrips(items, past) {
 function loadTrips() {
     $.ajax('/api/past-trips?limit=10', {
         success: (response) => {
-            $("#past-trips").html(getHTMLForTrips(response.items, true))
+            $("#past-trips").html(getHTMLForTrips(response.trips, true))
         }
     })
     $.ajax('/api/upcoming-trips?limit=1', {
         success: (response) => {
-            $("#upcoming-trips").html(getHTMLForTrips(response.items, false))
+            $("#upcoming-trips").html(getHTMLForTrips(response.trips, false))
         }
     })
 }
@@ -75,7 +78,7 @@ function updateMapMarkers(aisArray) {
         let marker = L.marker([ais.location.coordinates[1], ais.location.coordinates[0]])
         let popupText = `<b>${ais.vesselName}</b>`
         popupText += `<br />Speed: ${ais.speed} knots`
-        popupText += `<br />Updated ${dayjs(ais.timestamp).format("hh:mma")}`
+        popupText += `<br />Updated ${dayjs(ais.timestamp).tz("America/Puerto_Rico").format("hh:mma")}`
         marker.bindPopup(popupText, {
             closeButton: false,
             autoClose: false,

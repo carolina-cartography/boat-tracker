@@ -47,23 +47,77 @@ function getLimit(req) {
 async function getUpcomingTrips(req, res) {
 	db.collection("trips").find({
 		"startTime" : { $gte: Date.now() / 1000 }
-	}).sort({ "startTime": 1 }).limit(getLimit(req)).toArray((err, items) => {
-		if (err) {
-			return res.status(500).send(err)
-		}
-		res.status(200).json({ items })
+	}).sort({ "startTime": 1 }).limit(getLimit(req)).toArray((err, trips) => {
+		if (err) return res.status(500).send(err)
+		res.status(200).json({ trips })
 	});
 }
 
 async function getPastTrips(req, res) {
-	db.collection("trips").find({
-		"startTime" : { $lt: Date.now() / 1000 }
-	}).sort({ "startTime": -1 }).limit(getLimit(req)).toArray((err, items) => {
-		if (err) {
-			return res.status(500).send(err)
+	let trips
+	try {
+		trips = await db.collection("trips")
+			.find({ startTime : { $lt: Date.now() / 1000 } })
+			.sort({ startTime: -1 })
+			.limit(getLimit(req))
+			.toArray()
+	} catch (err) {
+		return res.status(500).send(err)
+	}
+	
+	for (let trip of trips) {
+		await processTrip(trip)
+	}
+
+	return res.status(200).json({ trips })
+}
+
+// Process Trip: runs algorithm to determine when a scheduled ferry left its port
+async function processTrip(trip) {
+
+	// Don't process trips that have already been processed
+	if (trip.departureDetails !== undefined) return
+
+	console.log(trip)
+
+	// Setup metadata
+	const mmsi = Static.MMSI_LIBRARY[trip.vesselId]
+	const geometry = trip.direction === 'outbound' ? Static.VIEQUES_PORT_GEOMETRY : Static.CEIBA_PORT_GEOMETRY
+
+	// Setup window
+	const windowStart = (trip.startTime - (60 * 30)) * 1000 // Start 30 minutes before departure
+	const windowEnd = (trip.startTime + (60 * 90)) * 1000 // End 90 minutes after departure
+	
+	// Try querying AIS data for official vessel
+	try {
+
+		// Get AIS array for vessel in time window
+		aisArray = await db.collection("ais")
+			.find({
+				mmsi,
+				timestamp: { $gt: windowStart, $lt: windowEnd },
+				location: { $geoWithin: { $geometry: geometry } },
+			})
+			.sort({ timestamp: 1 })
+			.toArray()
+		
+		// Determine port arrival and departure timestamps in window
+		let timeAtRest, timeInMotion
+		for (let ais of aisArray) {
+			if (timeAtRest === undefined && ais.status === Static.AIS_MOORED) {
+				timeAtRest = ais.timestamp
+			}
+			if (timeAtRest !== undefined && timeInMotion === undefined && ais.status === Static.AIS_UNDERWAY) {
+				timeInMotion = ais.timestamp
+				break
+			}
 		}
-		res.status(200).json({ items })
-	});
+		
+		trip.timeAtRest = timeAtRest
+		trip.timeInMotion = timeInMotion
+	} catch (err) {
+		console.log(err)
+	}
 }
 
 async function getMMSIList(req, res) {
