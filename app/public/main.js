@@ -73,7 +73,7 @@ function loadTrips() {
 
 function updateMapMarkers(boats) {
 
-    boats.sort((a, b) => a.timestamp - b.timestamp)
+    boats.sort((a, b) => b.timestamp - a.timestamp)
     
     markers.clearLayers()
     let boatListHTML = ""
