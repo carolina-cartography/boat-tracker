@@ -22,21 +22,29 @@ async function setupDatabase() {
 }
 
 function getBoats(req, res) {
-	let latestData = [];
+	let boats = [];
+
+	// Use async library to parse boats in paralell
+	// See https://caolan.github.io/async/v3/docs.html#each
 	Async.each(Object.keys(Static.MMSI_LIBRARY), (key, callback) => {
 		let mmsi = Static.MMSI_LIBRARY[key]
-		db.collection("ais").find({ "mmsi": mmsi }).sort({ "timestamp": -1 }).limit(1).toArray((err, items) => {
-			if (err) return res.status(500).send(err)
-			if (items.length > 0) {
-				let item = items[0]
-				item.vesselName = Static.VESSEL_NAMES[key]
-				latestData.push(item)
-			}
-			callback()
-		});
-	}, (err) => {
-		if (err) return res.status(500).send(err)
-		res.status(200).json(latestData)
+		db.collection("ais")
+			.find({ "mmsi": mmsi })
+			.sort({ "timestamp": -1 })
+			.limit(1)
+			.toArray((err, items) => {
+				if (err) return callback()
+				if (items.length < 1) return callback()
+
+				let boat = items[0]
+				boat.vesselName = Static.VESSEL_NAMES[key]
+				boat.vesselColor = Static.VESSEL_COLORS[key]
+				boats.push(boat)
+
+				callback()
+			})
+	}, () => {
+		res.status(200).json(boats)
 	})
 }
 
@@ -45,14 +53,16 @@ function getLimit(req) {
 }
 
 async function getUpcomingTrips(req, res) {
-	db.collection("trips").find({
-		"startTime" : { $gte: Date.now() / 1000 }
-	}).sort({ "startTime": 1 }).limit(getLimit(req)).toArray((err, items) => {
-		if (err) {
-			return res.status(500).send(err)
-		}
+	try {
+		let items = await db.collection("trips")
+			.find({ startTime : { $gte: Date.now() / 1000 } })
+			.sort({ startTime: 1 })
+			.limit(getLimit(req))
+			.toArray()
 		res.status(200).json({ items })
-	});
+	} catch (err) {
+		res.status(500).send(err)
+	}
 }
 
 async function getPastTrips(req, res) {

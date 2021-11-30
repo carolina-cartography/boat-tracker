@@ -2,10 +2,10 @@ html, body {width:100%; height:100%; margin:0px; padding:0px;}
 body {position:relative;}
 * {font-family:'Inconsolata', monospace; box-sizing:border-box;}
 
-.map {position:absolute; width:70%; height:100%; top:0px; left:0px;}
+.map {position:absolute; width:70%; height:100%; top:0px; left:0px; z-index:30;}
 .sidebar {
     position:absolute; width:30%; height:100%; top:0px; right:0px; overflow-y:scroll;
-    background:#333; color:white; padding-bottom:30px;
+    background:#333; color:white; padding-bottom:30px; z-index:40;
 }
 
 #leaflet {width:100%; height:100%;}
@@ -15,3 +15,22 @@ body {position:relative;}
 .trip {margin-top:20px; padding-bottom:20px; border-bottom:1px solid #666;}
 .trip div {display:inline-block; margin-right:18px; font-size:16px; min-width:60px;}
 .trip span {display:block; font-size:12px;}
+
+#boat-list {position:absolute; bottom:20px; left:20px; z-index:50;}
+.boat-item {margin-top:15px; padding:8px 10px; color:white; box-shadow:0px 0px 6px rgba(0,0,0,0.2);}
+.boat-item span {display:block; font-size:18px; line-height:1.2;}
+.boat-item .title {font-weight:bold;}
+.boat-item.black {background:#333;}
+.boat-item.red {background:#e76f51;}
+.boat-item.orange {background:#f4a261;}
+.boat-item.yellow {background:#e9c46a;}
+.boat-item.green {background:#2a9d8f;}
+.boat-item.blue {background:#264653;}
+
+svg .primary {fill:#eee;}
+.boat-black {fill:#333333;}
+.boat-red {fill: #e76f51}
+.boat-orange {fill: #f4a261;}
+.boat-yellow {fill: #e9c46a;}
+.boat-green {fill: #2a9d8f;}
+.boat-blue {fill: #264653;}

@@ -3,7 +3,6 @@ const MMSI_LIBRARY = {
     "mr-mason": "367481080",
     "mr-row": "367495520",
     "lady-eve": "367179790",
-    "straits-express": "368054610",
     "summer-wind": "368038080",
     "isleno": "367617270"
 }
@@ -13,10 +12,19 @@ const VESSEL_NAMES = {
     "mr-row": "Mr. Row",
     "lady-eve": "Lady Eve",
     "breezy-point": "Breezy Point",
-    "straits-express": "Straits Express",
     "summer-wind": "Summer Wind",
     "isleno": "Isleño"
 }
 
+const VESSEL_COLORS = {
+    "mr-mason": "black",
+    "mr-row": "red",
+    "lady-eve": "orange",
+    "breezy-point": "yellow",
+    "summer-wind": "green",
+    "isleno": "blue"
+}
+
 exports.MMSI_LIBRARY = MMSI_LIBRARY
 exports.VESSEL_NAMES = VESSEL_NAMES
+exports.VESSEL_COLORS = VESSEL_COLORS
