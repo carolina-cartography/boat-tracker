@@ -19,10 +19,10 @@ const VESSEL_NAMES = {
 const VESSEL_COLORS = {
     "mr-mason": "black",
     "mr-row": "red",
-    "lady-eve": "orange",
+    "lady-eve": "blue",
     "breezy-point": "yellow",
-    "summer-wind": "green",
-    "isleno": "blue"
+    "summer-wind": "orange",
+    "isleno": "green"
 }
 
 exports.MMSI_LIBRARY = MMSI_LIBRARY
