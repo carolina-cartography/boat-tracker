@@ -54,13 +54,14 @@ function getLimit(req) {
 }
 
 async function getUpcomingTrips(req, res) {
+	trips = []
 	try {
-		let items = await db.collection("trips")
+		trips = await db.collection("trips")
 			.find({ startTime : { $gte: Date.now() / 1000 } })
 			.sort({ startTime: 1 })
 			.limit(getLimit(req))
 			.toArray()
-		res.status(200).json({ items })
+		res.status(200).json({ trips })
 	} catch (err) {
 		res.status(500).send(err)
 	}
@@ -78,9 +79,10 @@ async function getPastTrips(req, res) {
 		return res.status(500).send(err)
 	}
 	
-	for (let trip of trips) {
-		await processTrip(trip)
-	}
+	// IN PROGRESS...
+	// for (let trip of trips) {
+	// 	await processTrip(trip)
+	// }
 
 	return res.status(200).json({ trips })
 }
