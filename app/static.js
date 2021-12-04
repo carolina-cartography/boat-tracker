@@ -1,26 +1,29 @@
 exports.MMSI_LIBRARY = {
+    // "mr-mason": "367481080",
     "breezy-point": "368037610",
-    "mr-mason": "367481080",
     "mr-row": "367495520",
     "lady-eve": "367179790",
     "summer-wind": "368038080",
-    "isleno": "367617270"
+    "isleno": "367617270",
+    "lady-brandi": "367481060"
 }
 exports.VESSEL_NAMES = {
-    "mr-mason": "Mr. Mason",
+    // "mr-mason": "Mr. Mason",
     "mr-row": "Mr. Row",
     "lady-eve": "Lady Eve",
     "breezy-point": "Breezy Point",
     "summer-wind": "Summer Wind",
-    "isleno": "Isleño"
+    "isleno": "Isleño",
+    "lady-brandy": "Lady Brandi"
 }
 exports.VESSEL_COLORS = {
-    "mr-mason": "black",
+    // "mr-mason": "black",
     "mr-row": "red",
     "lady-eve": "blue",
     "breezy-point": "yellow",
     "summer-wind": "orange",
-    "isleno": "green"
+    "isleno": "green",
+    "lady-brandi": "black"
 }
 
 exports.CEIBA_PORT_GEOMETRY = { 
