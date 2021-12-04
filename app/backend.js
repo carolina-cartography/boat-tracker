@@ -37,6 +37,7 @@ function getBoats(req, res) {
 				if (items.length < 1) return callback()
 
 				let boat = items[0]
+				boat.vesselId = key
 				boat.vesselName = Static.VESSEL_NAMES[key]
 				boat.vesselColor = Static.VESSEL_COLORS[key]
 				boats.push(boat)

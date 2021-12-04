@@ -18,7 +18,7 @@ body {position:relative;}
 
 #boat-list {position:absolute; bottom:20px; left:20px; z-index:50;}
 .boat-item {margin-top:15px; padding:8px 10px; color:white; box-shadow:0px 0px 6px rgba(0,0,0,0.2);}
-.boat-item span {display:block; font-size:18px; line-height:1.2;}
+.boat-item span {display:block; font-size:16px; line-height:1.2;}
 .boat-item .title {font-weight:bold;}
 .boat-item.black {background:#333;}
 .boat-item.red {background:#e76f51;}
