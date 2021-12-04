@@ -73,6 +73,8 @@ serialPort.on('data', (buffer) => {
             },
             status: decoded.navstatus,
             speed: decoded.sog,
+            heading: decoded.hdg,
+            course: decoded.cog
         }).then(result => {
             console.log(`Saved entry for ${decoded.mmsi} in database`)
         }).catch(err => {

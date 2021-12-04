@@ -3,7 +3,6 @@ exports.MMSI_LIBRARY = {
     "mr-mason": "367481080",
     "mr-row": "367495520",
     "lady-eve": "367179790",
-    "straits-express": "368054610",
     "summer-wind": "368038080",
     "isleno": "367617270"
 }
@@ -12,13 +11,17 @@ exports.VESSEL_NAMES = {
     "mr-row": "Mr. Row",
     "lady-eve": "Lady Eve",
     "breezy-point": "Breezy Point",
-    "straits-express": "Straits Express",
     "summer-wind": "Summer Wind",
     "isleno": "Isleño"
 }
-
-exports.AIS_MOORED = 5
-exports.AIS_UNDERWAY = 0
+exports.VESSEL_COLORS = {
+    "mr-mason": "black",
+    "mr-row": "red",
+    "lady-eve": "blue",
+    "breezy-point": "yellow",
+    "summer-wind": "orange",
+    "isleno": "green"
+}
 
 exports.CEIBA_PORT_GEOMETRY = { 
     coordinates: [[ 
@@ -40,3 +43,6 @@ exports.VIEQUES_PORT_GEOMETRY = {
     ]],
     type: "Polygon"
 }
+
+exports.AIS_MOORED = 5
+exports.AIS_UNDERWAY = 0
