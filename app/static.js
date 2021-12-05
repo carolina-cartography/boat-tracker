@@ -14,7 +14,7 @@ exports.VESSEL_NAMES = {
     "breezy-point": "Breezy Point",
     "summer-wind": "Summer Wind",
     "isleno": "Isleño",
-    "lady-brandy": "Lady Brandi"
+    "lady-brandi": "Lady Brandi"
 }
 exports.VESSEL_COLORS = {
     // "mr-mason": "black",
