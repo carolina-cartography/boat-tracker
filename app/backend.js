@@ -79,7 +79,6 @@ async function getPastTrips(req, res) {
 		return res.status(500).send(err)
 	}
 	
-	// IN PROGRESS...
 	// for (let trip of trips) {
 	// 	await processTrip(trip)
 	// }
@@ -96,11 +95,11 @@ async function processTrip(trip) {
 	console.log(trip)
 
 	// Setup metadata
-	const mmsi = Static.MMSI_LIBRARY[trip.vesselId]
+	let mmsi = Static.MMSI_LIBRARY[trip.vesselId]
 	const geometry = trip.direction === 'outbound' ? Static.VIEQUES_PORT_GEOMETRY : Static.CEIBA_PORT_GEOMETRY
 
 	// Setup window
-	const windowStart = (trip.startTime - (60 * 30)) * 1000 // Start 30 minutes before departure
+	const windowStart = (trip.startTime - (60 * 20)) * 1000 // Start 20 minutes before departure
 	const windowEnd = (trip.startTime + (60 * 90)) * 1000 // End 90 minutes after departure
 	
 	// Try querying AIS data for official vessel
@@ -111,10 +110,12 @@ async function processTrip(trip) {
 			.find({
 				mmsi,
 				timestamp: { $gt: windowStart, $lt: windowEnd },
-				location: { $geoWithin: { $geometry: geometry } },
+				// location: { $geoWithin: { $geometry: geometry } },
 			})
 			.sort({ timestamp: 1 })
 			.toArray()
+
+		console.log(`Data count: ${aisArray.length}`)
 		
 		// Determine port arrival and departure timestamps in window
 		let timeAtRest, timeInMotion
@@ -130,6 +131,7 @@ async function processTrip(trip) {
 		
 		trip.timeAtRest = timeAtRest
 		trip.timeInMotion = timeInMotion
+		// if (trip.timeInMotion === undefined) trip.timeInMotion = `${aisArray.length} packets`
 	} catch (err) {
 		console.log(err)
 	}
