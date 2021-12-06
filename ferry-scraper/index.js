@@ -62,8 +62,8 @@ function mongoInsert(doc) {
 
 async function scrape() {
 
-    // Setup query
-    let date = Moment().format("MM/DD/YY")
+    // Setup query (does the FOLLOWING day)
+    let date = Moment().add(1,'days').format("MM/DD/YY")
     console.log(`Querying ferries for ${date}`)
     let query = QUERYJSON
     query.variables.date = date
