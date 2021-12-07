@@ -72,69 +72,89 @@ async function getPastTrips(req, res) {
 	try {
 		trips = await db.collection("trips")
 			.find({ startTime : { $lt: Date.now() / 1000 } })
-			.sort({ startTime: -1 })
+			.sort({ endTime: -1 })
 			.limit(getLimit(req))
 			.toArray()
 	} catch (err) {
 		return res.status(500).send(err)
 	}
 	
-	// for (let trip of trips) {
-	// 	await processTrip(trip)
-	// }
+	for (let trip of trips) {
+		await processViequesEvents(trip)
+		for (let event of trip.viequesEvents) {
+			event.vesselName = Static.VESSEL_NAMES[event.vesselId]
+		}
+	}
 
 	return res.status(200).json({ trips })
 }
 
-// Process Trip: runs algorithm to determine when a scheduled ferry left its port
-async function processTrip(trip) {
+// Process Vieques Events: runs algorithm to determine when a scheduled ferry left or arrived in Vieques
+async function processViequesEvents(trip) {
 
 	// Don't process trips that have already been processed
-	if (trip.departureDetails !== undefined) return
-
-	console.log(trip)
-
-	// Setup metadata
-	let mmsi = Static.MMSI_LIBRARY[trip.vesselId]
-	const geometry = trip.direction === 'outbound' ? Static.VIEQUES_PORT_GEOMETRY : Static.CEIBA_PORT_GEOMETRY
+	if (trip.viequesEvents !== undefined) return
 
 	// Setup window
-	const windowStart = (trip.startTime - (60 * 20)) * 1000 // Start 20 minutes before departure
-	const windowEnd = (trip.startTime + (60 * 90)) * 1000 // End 90 minutes after departure
+	let windowFocus = trip.direction === 'inbound' ? trip.endTime : trip.startTime
+	let windowStart = (windowFocus - (60 * 90)) * 1000
+	let windowEnd = (windowFocus + (60 * 90)) * 1000
+
+	// Setup sort
+	let sort = trip.direction === 'inbound' ? 1 : -1;
 	
-	// Try querying AIS data for official vessel
+	// Query AIS data
 	try {
 
-		// Get AIS array for vessel in time window
-		aisArray = await db.collection("ais")
+		let allAis = await db.collection("ais")
 			.find({
-				mmsi,
 				timestamp: { $gt: windowStart, $lt: windowEnd },
-				// location: { $geoWithin: { $geometry: geometry } },
+				location: { $geoWithin: { $geometry: Static.VIEQUES_PORT_GEOMETRY } },
 			})
-			.sort({ timestamp: 1 })
 			.toArray()
-
-		console.log(`Data count: ${aisArray.length}`)
 		
-		// Determine port arrival and departure timestamps in window
-		let timeAtRest, timeInMotion
-		for (let ais of aisArray) {
-			if (timeAtRest === undefined && ais.status === Static.AIS_MOORED) {
-				timeAtRest = ais.timestamp
-			}
-			if (timeAtRest !== undefined && timeInMotion === undefined && ais.status === Static.AIS_UNDERWAY) {
-				timeInMotion = ais.timestamp
-				break
-			}
+		let relevantMMSIMap = {}
+		for (let ais of allAis) {
+			relevantMMSIMap[ais.mmsi] = true
 		}
 		
-		trip.timeAtRest = timeAtRest
-		trip.timeInMotion = timeInMotion
-		// if (trip.timeInMotion === undefined) trip.timeInMotion = `${aisArray.length} packets`
+		trip.viequesEvents = []
+
+		// If published vessel not found, collect all departures
+		for (let mmsi of Object.keys(relevantMMSIMap)) {
+
+			// Get AIS array for vessel in time window
+			let aisArray = await db.collection("ais")
+				.find({
+					mmsi: mmsi,
+					timestamp: { $gt: windowStart, $lt: windowEnd },
+					location: { $geoWithin: { $geometry: Static.VIEQUES_PORT_GEOMETRY } },
+				})
+				.sort({ timestamp: sort })
+				.toArray()
+			
+			trip.viequesEvents.push({
+				timestamp: aisArray[0].timestamp,
+				vesselId: Static.VESSEL_ID_LIBRARY[mmsi],
+			})
+		}
+		
 	} catch (err) {
 		console.log(err)
 	}
+
+	if (Date.now() > windowEnd) {
+		try {
+			await db.collection("trips").updateOne(
+				{ id: trip.id }, 
+				{ $set: { viequesEvents: trip.viequesEvents }},
+				{ upsert: false }
+			)
+		} catch (err) {
+			console.error(err)
+		}
+	}
+
 }
 
 async function getMMSIList(req, res) {
