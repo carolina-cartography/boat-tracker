@@ -59,7 +59,7 @@ async function getTrips(req, res) {
 	try {
 		publishedTrips = await db.collection("trips")
 			.find({ 
-				startTime : { $gt: after, $lt: before },
+				startTime : { $gte: after, $lte: before },
 			})
 			.sort({ startTime: 1 })
 			.toArray()

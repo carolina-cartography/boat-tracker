@@ -35,7 +35,7 @@ body {position:relative;}
 .heading {position:absolute; bottom:0px; font-size:18px; font-weight:bold;}
 
 #timeline {position:relative; margin:10px;}
-.border {position:absolute; top:0px; left:310px; width:1px; height:900px; border-left:1px solid #ccc;}
+.border {position:absolute; top:0px; left:310px; width:1px; height:1440px; border-left:1px solid #ccc;}
 .hour {position:absolute; width:100%; border-top:1px solid #ccc; padding-top:5px; color:#333;}
 .now {position:absolute; width:100%; border-top:1px solid red;}
 .trip {position:absolute; height:45px; width:30px;}
