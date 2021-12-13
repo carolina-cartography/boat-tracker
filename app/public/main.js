@@ -1,8 +1,10 @@
 const CENTER = [18.16831061820438, -65.54537588810639]
 const ZOOM = 12
+const HOURS = 15
+const FUTURE_HOURS = 3
 const REFRESH_INTERVAL = 60000
-const PAST_TRIP_COUNT = 10
-const UPCOMING_TRIP_COUNT = 2
+
+const TRIP_WIDTH = 30
 
 const BOAT_SVG = `<svg class="boat" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><path class="accent" d="M336.4,231.3c-0.1-44.1-7.7-78.3-13.9-99.7c-10.1-35-22.9-57.7-35.1-73.8c-19.2-25.5-30.6-26.2-33.4-26.2c-5.2,0-15.8,1.7-34.5,26.2c-9.6,12.5-22.6,33.6-34,73.8c-6.3,22.2-13.6,55.9-14.8,98.7"/><rect x="170.9" y="225" class="accent" width="165.6" height="193.2"/><path class="primary" d="M327.2,250.6c-0.1-45-6.8-79.8-12.3-101.7c-9-35.7-20.3-58.9-31.1-75.3c-17.1-26-27.2-26.7-29.7-26.8c-4.6,0-14,1.8-30.7,26.8c-8.5,12.8-20.1,34.3-30.2,75.3c-5.6,22.6-12,57-13.1,100.8L327.2,250.6z"/><rect x="193.6" y="260.4" class="accent" width="120.1" height="38.7"/><path class="accent" d="M316.6,481.4H190.7c-11,0-19.8-8.9-19.8-19.8v-44.1c0-11,8.9-19.8,19.8-19.8h125.9c11,0,19.8,8.9,19.8,19.8v44.1C336.4,472.5,327.6,481.4,316.6,481.4z"/><path class="primary" d="M310.1,472.7H197.2c-9.4,0-17.1-7.7-17.1-17.1V248.4c0-9.4,7.7-17.1,17.1-17.1h112.9c9.4,0,17.1,7.7,17.1,17.1v207.2C327.2,465,319.5,472.7,310.1,472.7z"/><path class="accent" d="M295.7,453h-84.2c-7.9,0-14.4-6.4-14.4-14.4V245.6c0-7.9,6.4-14.4,14.4-14.4h84.2c7.9,0,14.4,6.4,14.4,14.4v193.1C310.1,446.6,303.7,453,295.7,453z"/></svg>`
 
@@ -12,6 +14,7 @@ $(document).ready(() => {
     dayjs.extend(window.dayjs_plugin_relativeTime)
     dayjs.extend(window.dayjs_plugin_utc)
     dayjs.extend(window.dayjs_plugin_timezone)
+    dayjs.extend(window.dayjs_plugin_advancedFormat)
     dayjs.locale('es')
 
 	initializeMap()
@@ -45,59 +48,76 @@ function initializeMap() {
 
 function load() {
     loadBoats()
-    loadTrips()
+    loadTimeline()
 }
 
-function getHTMLForTrips(trips, past) {
+async function loadTimeline() {
 
-    // Validate HTML from server
-    if (trips.length < 1 && !past) return "No more ferries today"
+    // Setup timeline elements
+    let updatedTimeline = $("<div>", { id: 'timeline' })
+    updatedTimeline.append($("<div>", { class: 'border'}))
 
-    let html = "<table>";
-    html += "<tr>"
-        html += "<th>Tiempo</th>"
-        html += "<th>Dirección</th>"
-        html += "<th>Barco publicado</th>"
-        if (past) html += "<th>Tiempos detectados</th>"
-    html += "</tr>"
+    // Get times
+    let now = dayjs()
+    let upperEnd = dayjs().startOf('hour').add(FUTURE_HOURS, 'hours')
+    let lowerEnd = upperEnd.subtract(HOURS, 'hours')
 
-    for (let trip of trips) {
-        let direction = trip.direction === "outbound" ? "Saliente" : "Entrante"
-        let time = trip.direction === "outbound" ? trip.startTime : trip.endTime
-        html += "<tr>"
-            html += `<td>${dayjs(time*1000).tz("America/Puerto_Rico").format("MM/DD h:mma")}</td>`
-            html += `<td>${direction}</td>`
-            html += `<td>${trip.vessel}</td>`
-            if (past) {
-                html += "<td class='events'>"
-                    if (trip.viequesEvents.length > 0) for (let event of trip.viequesEvents) {
-                        html += `<div>${event.vesselName}
-                            ${trip.direction === "outbound" ? "salió" : "llegó"} @
-                            ${dayjs(event.timestamp).tz("America/Puerto_Rico").format("h:mma")}</div>`
-                    } else {
-                        html += "Sin datos"
-                    }
-                html += "</td>"
-            } 
-        html += "</tr>"
+    // Setup hour grid
+    let i = 0
+    while (i < HOURS) {
+        let hourDiv = $("<div>", {class: 'hour'})
+        hourDiv.css("top", `${60*i}px`)
+        hourDiv.text(upperEnd.subtract(i, 'hours').tz("America/Puerto_Rico").format('ha'))
+        updatedTimeline.append(hourDiv)
+        i++
     }
 
-    html += "</table>"
+    // Put current time on grid
+    let nowDiv = $("<div>", {class: 'now'})
+    nowDiv.css("top", `${(upperEnd.format('X') - now.format('X')) / 60}px`)
+    updatedTimeline.append(nowDiv)
 
-    return html
+    // Get published trips for grid
+    await $.ajax(`/api/trips?before=${upperEnd.format('X')}&after=${lowerEnd.format('X')}`, {
+        success: (response) => {
+            addTripsToTimeline(response.publishedTrips, upperEnd, updatedTimeline)
+            addTripsToTimeline(response.detectedTrips, upperEnd, updatedTimeline)
+        }
+    })
+
+    $("#timeline").html(updatedTimeline.html())
 }
 
-function loadTrips() {
-    $.ajax(`/api/past-trips?limit=${PAST_TRIP_COUNT}`, {
-        success: (response) => {
-            $("#past-trips").html(getHTMLForTrips(response.trips, true))
+function addTripsToTimeline(trips, upperEnd, updatedTimeline) {
+    let addedTrips = []
+    for (let trip of trips) {
+
+        // Stagger trips
+        // NOTE: This part of the algorithm is computationally inefficient. Rethink at some point
+        let marginLeft = 0
+        let i = 0
+        while (i < 4) {
+            if (
+                addedTrips[i] !== undefined && 
+                trip.type === addedTrips[i].type &&
+                trip.direction === addedTrips[i].direction && 
+                (trip.startTime - addedTrips[i].startTime) < 2700
+            ) marginLeft += TRIP_WIDTH + 5
+            i++
         }
-    })
-    $.ajax(`/api/upcoming-trips?limit=${UPCOMING_TRIP_COUNT}`, {
-        success: (response) => {
-            $("#upcoming-trips").html(getHTMLForTrips(response.trips, false))
-        }
-    })
+
+        // Add trip to DOM
+        let tripDiv = $("<div>", {
+            class: `trip ${trip.type} ${trip.direction} ${trip.vesselColor}`
+        })
+        let tripTop = ((upperEnd.format('X') - trip.startTime) / 60 ) - 45
+        tripDiv.css("top", `${tripTop}px`)
+        tripDiv.css("margin-left", `${marginLeft}px`)
+        updatedTimeline.append(tripDiv)
+
+        // Add trip array to backwards array for stagger
+        addedTrips.unshift(trip)
+    }
 }
 
 function updateMapMarkers(boats) {
@@ -116,7 +136,7 @@ function updateMapMarkers(boats) {
         boatListHTML += `<div id="${boat.vesselId}-item" class="boat-item ${boat.vesselColor}">`
             boatListHTML += `<span class="title">${boat.vesselName}</span>`
             boatListHTML += `<span>Estado: ${boat.status == 0 ? "en movimiento" : "amarrado"}</span>`
-            boatListHTML += `<span>Velocidad: ${boat.speed} knots</span>`
+            if (boat.status == 0) boatListHTML += `<span>Velocidad: ${boat.speed} knots</span>`
             boatListHTML += `<span class="time">${dayjs(boat.timestamp).tz("America/Puerto_Rico").fromNow()}`
         boatListHTML += "</div>"
 

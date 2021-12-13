@@ -49,112 +49,99 @@ function getBoats(req, res) {
 	})
 }
 
-function getLimit(req) {
-	return req.query.limit !== undefined ? parseInt(req.query.limit, 10) : 10
-}
+async function getTrips(req, res) {
 
-async function getUpcomingTrips(req, res) {
-	trips = []
+	let before = parseInt(req.query.before, 10)
+	let after = parseInt(req.query.after, 10)
+
+	// Get published trips
+	let publishedTrips = []
 	try {
-		trips = await db.collection("trips")
-			.find({ startTime : { $gte: Date.now() / 1000 } })
+		publishedTrips = await db.collection("trips")
+			.find({ 
+				startTime : { $gt: after, $lt: before },
+			})
 			.sort({ startTime: 1 })
-			.limit(getLimit(req))
-			.toArray()
-		res.status(200).json({ trips })
-	} catch (err) {
-		res.status(500).send(err)
-	}
-}
-
-async function getPastTrips(req, res) {
-	let trips
-	try {
-		trips = await db.collection("trips")
-			.find({ startTime : { $lt: Date.now() / 1000 } })
-			.sort({ endTime: -1 })
-			.limit(getLimit(req))
 			.toArray()
 	} catch (err) {
+		console.error(err)
 		return res.status(500).send(err)
 	}
-	
-	for (let trip of trips) {
-		await processViequesEvents(trip)
-		for (let event of trip.viequesEvents) {
-			event.vesselName = Static.VESSEL_NAMES[event.vesselId]
-		}
+	for (let trip of publishedTrips) {
+		trip.type = 'published'
+		trip.vesselColor = Static.VESSEL_COLORS[trip.vesselId]
 	}
 
-	return res.status(200).json({ trips })
-}
-
-// Process Vieques Events: runs algorithm to determine when a scheduled ferry left or arrived in Vieques
-async function processViequesEvents(trip) {
-
-	// Don't process trips that have already been processed
-	if (trip.viequesEvents !== undefined) return
-
-	// Setup window
-	let windowFocus = trip.direction === 'inbound' ? trip.endTime : trip.startTime
-	let windowStart = (windowFocus - (60 * 90)) * 1000
-	let windowEnd = (windowFocus + (60 * 90)) * 1000
-
-	// Setup sort
-	let sort = trip.direction === 'inbound' ? 1 : -1;
-	
-	// Query AIS data
+	// Get detected trips
+	let detectedTrips = []
 	try {
 
-		let allAis = await db.collection("ais")
+		// Get all AIS packets from Vieques port
+		let aisInPort = await db.collection("ais")
 			.find({
-				timestamp: { $gt: windowStart, $lt: windowEnd },
+				timestamp: { $gt: after * 1000, $lt: before * 1000 },
 				location: { $geoWithin: { $geometry: Static.VIEQUES_PORT_GEOMETRY } },
 			})
+			.sort({ timestamp: 1 })
 			.toArray()
-		
-		let relevantMMSIMap = {}
-		for (let ais of allAis) {
-			relevantMMSIMap[ais.mmsi] = true
-		}
-		
-		trip.viequesEvents = []
 
-		// If published vessel not found, collect all departures
-		for (let mmsi of Object.keys(relevantMMSIMap)) {
+		// Get port boundary crossings
+		let crossings = [];	
+		let latestPackets = {}
+		for (let ais of aisInPort) {
 
-			// Get AIS array for vessel in time window
-			let aisArray = await db.collection("ais")
-				.find({
-					mmsi: mmsi,
-					timestamp: { $gt: windowStart, $lt: windowEnd },
-					location: { $geoWithin: { $geometry: Static.VIEQUES_PORT_GEOMETRY } },
-				})
-				.sort({ timestamp: sort })
-				.toArray()
+			// For each boat, save the first packets from the query if they show a boat moving into the port
+			if (latestPackets[ais.mmsi] === undefined) {
+				if (
+					ais.status == Static.AIS_UNDERWAY &&
+					ais.course < 180
+				) {
+					crossings.push(ais)
+				}
+			} 
 			
-			trip.viequesEvents.push({
-				timestamp: aisArray[0].timestamp,
-				vesselId: Static.VESSEL_ID_LIBRARY[mmsi],
+			// For each boat, save the packets before and after a greater-than-10-minute gap in data
+			else if (ais.timestamp > latestPackets[ais.mmsi].timestamp + (1000 * 60 * 10)) {
+				crossings.push(latestPackets[ais.mmsi])
+				crossings.push(ais)
+			}
+			latestPackets[ais.mmsi] = ais
+		}
+
+		// Get leftover packets for departing ships that don't return in the window (wait 5 minutes to add)
+		for (let mmsi of Object.keys(latestPackets)) {
+			let ais = latestPackets[mmsi]
+			if (
+				Date.now() - ais.timestamp > 1000 * 60 * 5 &&
+				ais.course > 180
+			) crossings.push(ais)
+		}
+
+		// Determine trips from crossings
+		for (let crossing of crossings) {
+			let vesselId = Static.VESSEL_ID_LIBRARY[crossing.mmsi]
+			let direction = crossing.course < 180 ? 'inbound' : 'outbound'
+			let crossingSeconds = crossing.timestamp / 1000
+			detectedTrips.push({
+				direction,
+				type: 'detected',
+				vesselId: vesselId,
+				vesselColor: Static.VESSEL_COLORS[vesselId],
+				startTime: direction === 'inbound' ? (crossingSeconds - 60 * 45) : crossingSeconds
 			})
 		}
-		
+
+		detectedTrips.sort((a, b) => {
+			if (a.startTime < b.startTime) return -1
+			return 1
+		})
+
 	} catch (err) {
-		console.log(err)
+		console.error(err)
+		return res.status(500).send(err)
 	}
 
-	if (Date.now() > windowEnd) {
-		try {
-			await db.collection("trips").updateOne(
-				{ id: trip.id }, 
-				{ $set: { viequesEvents: trip.viequesEvents }},
-				{ upsert: false }
-			)
-		} catch (err) {
-			console.error(err)
-		}
-	}
-
+	return res.status(200).json({ publishedTrips, detectedTrips })
 }
 
 async function getMMSIList(req, res) {
@@ -188,7 +175,6 @@ module.exports = {
 		router.get('/', (req, res) => res.send('Welcome to the Boat Tracker backend'))
 		router.get('/mmsi-list', getMMSIList)
 		router.get('/boats', getBoats)
-		router.get('/upcoming-trips', getUpcomingTrips)
-		router.get('/past-trips', getPastTrips)
+		router.get('/trips', getTrips)
 	}
 }

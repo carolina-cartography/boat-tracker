@@ -14,6 +14,7 @@
         <script src="https://unpkg.com/dayjs@1.9.3/plugin/relativeTime.js"></script>
         <script src="https://unpkg.com/dayjs@1.9.3/plugin/utc.js"></script>
         <script src="https://unpkg.com/dayjs@1.9.3/plugin/timezone.js"></script>
+        <script src="https://unpkg.com/dayjs@1.9.3/plugin/advancedFormat.js"></script>
         <script src="https://unpkg.com/dayjs@1.9.3/locale/es.js"></script>
 
         <!-- Fonts -->
@@ -31,16 +32,20 @@
         </div>
         <div id="boat-list"></div>
         <div class="sidebar">
-            <div class="trips">
-                <div class="list">
-                    <h2>Próximas viajes</h2>
-                    <div id="upcoming-trips">Cargando...</div>
+            <div class="legend">
+                <h2>Guía</h2>
+                <div class="legend-item">
+                    <i class="published"></i><span>Viaje publicado</span>
                 </div>
-                <div class="list">
-                    <h2>Últimas viajes</h2>
-                    <div id="past-trips">Cargando...</div>
+                <div class="legend-item">
+                    <i class="detected"></i><span>Viaje detectado</span>
                 </div>
             </div>
+            <div class="headings">
+                <div class="heading outbound">Viajes de Vieques</div>
+                <div class="heading inbound">Viajes a Vieques</div>
+            </div>
+            <div id="timeline"></div>
         </div>
     </body>
 </html>
