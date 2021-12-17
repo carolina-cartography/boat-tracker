@@ -57,13 +57,17 @@ async function loadTrips() {
 
     // Setup timeline elements
     let updatedTimeline = $("<div>", { id: 'timeline' })
-    updatedTimeline.append($("<div>", { class: 'border'}))
+    updatedTimeline.append($("<div>", { class: 'border inbound'}))
+    updatedTimeline.append($("<div>", { class: 'column outbound detected'}))
+    updatedTimeline.append($("<div>", { class: 'column inbound detected'}))
 
     // Get times
     let now = dayjs()
     let upperEnd = dayjs().startOf('hour').add(FUTURE_HOURS, 'hours')
-    let queryUpperEnd = upperEnd.subtract(TRIP_MINUTES, 'minutes')
     let lowerEnd = upperEnd.subtract(HOURS, 'hours')
+
+    let upperEndQuery = upperEnd.subtract(TRIP_MINUTES, 'minutes')
+    let lowerEndQuery = lowerEnd.add(TRIP_MINUTES, 'minutes')
 
     // Setup hour grid
     let i = 0
@@ -88,10 +92,12 @@ async function loadTrips() {
     updatedTimeline.append(nowDiv)
 
     // Get published trips for grid
-    await $.ajax(`/api/trips?before=${queryUpperEnd.format('X')}&after=${lowerEnd.format('X')}`, {
+    await $.ajax(`/api/trips?before=${upperEndQuery.format('X')}&after=${lowerEndQuery.format('X')}`, {
         success: (response) => {
-            addTripsToTimeline(response.publishedTrips, upperEnd, updatedTimeline)
-            addTripsToTimeline(response.detectedTrips, upperEnd, updatedTimeline)
+            addTripsToTimeline(response.publishedInbound, upperEnd, updatedTimeline)
+            addTripsToTimeline(response.publishedOutbound, upperEnd, updatedTimeline)
+            addTripsToTimeline(response.detectedInbound, upperEnd, updatedTimeline)
+            addTripsToTimeline(response.detectedOutbound, upperEnd, updatedTimeline)
         }
     })
 
@@ -103,16 +109,17 @@ function addTripsToTimeline(trips, upperEnd, updatedTimeline) {
     for (let trip of trips) {
 
         // Stagger trips
-        // NOTE: This part of the algorithm is computationally inefficient. Rethink at some point
         let marginLeft = 0
         let i = 0
-        while (i < 6) {
+        while (i < 3) {
             if (
                 addedTrips[i] !== undefined && 
-                trip.type === addedTrips[i].type &&
-                trip.direction === addedTrips[i].direction && 
-                (trip.startTime - addedTrips[i].startTime) < (TRIP_TIME * 60)
-            ) marginLeft += TRIP_WIDTH + 5
+                (trip.startTime - addedTrips[i].startTime) < (TRIP_MINUTES * 60 * (i+1))
+            ) {
+                marginLeft += TRIP_WIDTH + 5
+            } else {
+                break
+            }
             i++
         }
 
@@ -120,7 +127,7 @@ function addTripsToTimeline(trips, upperEnd, updatedTimeline) {
         let tripDiv = $("<div>", {
             class: `trip ${trip.type} ${trip.direction} ${trip.vesselColor}`
         })
-        let tripTop = ((upperEnd.format('X') - trip.startTime) / 60) - TRIP_TIME
+        let tripTop = ((upperEnd.format('X') - trip.startTime) / 60) - TRIP_MINUTES
         tripDiv.css("top", `${tripTop}px`)
         tripDiv.css("margin-left", `${marginLeft}px`)
         updatedTimeline.append(tripDiv)

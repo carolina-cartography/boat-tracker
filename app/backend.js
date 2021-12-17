@@ -49,17 +49,40 @@ function getBoats(req, res) {
 	})
 }
 
+function sortTrips(a, b) {
+	if (a.startTime < b.startTime) return -1
+	else if (a.startTime > b.startTime) return 1
+	else {
+		if (a.vesselId < b.vesselId) return -1
+		return 1
+	}
+}
+
+function preparePublishedTrip(trip) {
+	trip.type = 'published'
+	trip.vesselColor = Static.VESSEL_COLORS[trip.vesselId]
+}
+
 async function getTrips(req, res) {
 
 	let before = parseInt(req.query.before, 10)
 	let after = parseInt(req.query.after, 10)
 
 	// Get published trips
-	let publishedTrips = []
+	let publishedInbound = []
+	let publishedOutbound = []
 	try {
-		publishedTrips = await db.collection("trips")
+		publishedInbound = await db.collection("trips")
 			.find({ 
-				startTime : { $gte: after, $lt: before },
+				startTime: { $gt: after, $lt: before },
+				direction: "inbound",
+			})
+			.sort({ startTime: 1 })
+			.toArray()
+		publishedOutbound = await db.collection("trips")
+			.find({ 
+				startTime: { $gt: after, $lt: before },
+				direction: "outbound",
 			})
 			.sort({ startTime: 1 })
 			.toArray()
@@ -67,19 +90,20 @@ async function getTrips(req, res) {
 		console.error(err)
 		return res.status(500).send(err)
 	}
-	for (let trip of publishedTrips) {
-		trip.type = 'published'
-		trip.vesselColor = Static.VESSEL_COLORS[trip.vesselId]
-	}
+
+	// Prepare published trips
+	for (let trip of publishedInbound) preparePublishedTrip(trip)
+	for (let trip of publishedOutbound) preparePublishedTrip(trip)
 
 	// Get detected trips
-	let detectedTrips = []
+	let detectedInbound = []
+	let detectedOutbound = []
 	try {
 
 		// Get all AIS packets from Vieques port
 		let aisInPort = await db.collection("ais")
 			.find({
-				timestamp: { $gt: after * 1000, $lt: before * 1000 },
+				timestamp: { $gte: after * 1000, $lt: before * 1000 },
 				location: { $geoWithin: { $geometry: Static.VIEQUES_PORT_GEOMETRY } },
 			})
 			.sort({ timestamp: 1 })
@@ -117,31 +141,36 @@ async function getTrips(req, res) {
 			) crossings.push(ais)
 		}
 
-		// Determine trips from crossings
+		// Determine trips from crossings, add to arrays
 		for (let crossing of crossings) {
-			let vesselId = Static.VESSEL_ID_LIBRARY[crossing.mmsi]
 			let direction = crossing.course < 180 ? 'inbound' : 'outbound'
+			let vesselId = Static.VESSEL_ID_LIBRARY[crossing.mmsi]
 			let crossingSeconds = crossing.timestamp / 1000
-			detectedTrips.push({
+			
+			let formattedTrip = {
 				direction,
 				type: 'detected',
 				vesselId: vesselId,
 				vesselColor: Static.VESSEL_COLORS[vesselId],
 				startTime: direction === 'inbound' ? (crossingSeconds - (Static.TRIP_MINUTES * 60)) : crossingSeconds
-			})
+			}
+
+			if (direction === 'inbound') detectedInbound.push(formattedTrip)
+			else detectedOutbound.push(formattedTrip)
 		}
 
-		detectedTrips.sort((a, b) => {
-			if (a.startTime < b.startTime) return -1
-			return 1
-		})
+		// Sort arrays
+		publishedInbound.sort(sortTrips)
+		publishedOutbound.sort(sortTrips)
+		detectedInbound.sort(sortTrips)
+		detectedOutbound.sort(sortTrips)
 
 	} catch (err) {
 		console.error(err)
 		return res.status(500).send(err)
 	}
 
-	return res.status(200).json({ publishedTrips, detectedTrips })
+	return res.status(200).json({ publishedInbound, publishedOutbound, detectedInbound, detectedOutbound })
 }
 
 async function getMMSIList(req, res) {
