@@ -1,3 +1,12 @@
+// Times
+exports.TRIP_MINUTES = 45
+exports.AIS_GAP_MINUTES = 3
+
+// AIS Codes
+exports.AIS_MOORED = 5
+exports.AIS_UNDERWAY = 0
+
+// Vessel Metadata
 exports.MMSI_LIBRARY = {
     // "mr-mason": "367481080",
     "breezy-point": "368037610",
@@ -35,6 +44,7 @@ exports.VESSEL_COLORS = {
     "lady-brandi": "black"
 }
 
+// Geographies
 exports.CEIBA_PORT_GEOMETRY = {
     "type": "Polygon",
     "coordinates": [
@@ -157,6 +167,3 @@ exports.VIEQUES_PORT_GEOMETRY_WIDE = {
     ]
   ]
 }
-
-exports.AIS_MOORED = 5
-exports.AIS_UNDERWAY = 0

@@ -59,7 +59,7 @@ async function getTrips(req, res) {
 	try {
 		publishedTrips = await db.collection("trips")
 			.find({ 
-				startTime : { $gte: after, $lte: before },
+				startTime : { $gte: after, $lt: before },
 			})
 			.sort({ startTime: 1 })
 			.toArray()
@@ -100,19 +100,19 @@ async function getTrips(req, res) {
 				}
 			} 
 			
-			// For each boat, save the packets before and after a greater-than-10-minute gap in data
-			else if (ais.timestamp > latestPackets[ais.mmsi].timestamp + (1000 * 60 * 10)) {
+			// For each boat, save the packets before and after a gap in data
+			else if (ais.timestamp > latestPackets[ais.mmsi].timestamp + (1000 * 60 * Static.AIS_GAP_MINUTES)) {
 				crossings.push(latestPackets[ais.mmsi])
 				crossings.push(ais)
 			}
 			latestPackets[ais.mmsi] = ais
 		}
 
-		// Get leftover packets for departing ships that don't return in the window (wait 5 minutes to add)
+		// Get leftover packets for departing ships that don't return in the window (wait gap to add)
 		for (let mmsi of Object.keys(latestPackets)) {
 			let ais = latestPackets[mmsi]
 			if (
-				Date.now() - ais.timestamp > 1000 * 60 * 5 &&
+				Date.now() - ais.timestamp > (1000 * 60 * Static.AIS_GAP_MINUTES) &&
 				ais.course > 180
 			) crossings.push(ais)
 		}
@@ -127,7 +127,7 @@ async function getTrips(req, res) {
 				type: 'detected',
 				vesselId: vesselId,
 				vesselColor: Static.VESSEL_COLORS[vesselId],
-				startTime: direction === 'inbound' ? (crossingSeconds - 60 * 45) : crossingSeconds
+				startTime: direction === 'inbound' ? (crossingSeconds - (Static.TRIP_MINUTES * 60)) : crossingSeconds
 			})
 		}
 

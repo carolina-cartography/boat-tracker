@@ -36,9 +36,10 @@ body {position:relative;}
 
 #timeline {position:relative; margin:10px;}
 .border {position:absolute; top:0px; left:310px; width:1px; height:1440px; border-left:1px solid #ccc;}
-.hour {position:absolute; width:100%; border-top:1px solid #ccc; padding-top:5px; color:#333;}
-.now {position:absolute; width:100%; border-top:1px solid red;}
-.trip {position:absolute; height:45px; width:30px;}
+.hour {position:absolute; width:100%; border-top:1px solid #ccc; padding-top:5px; color:#333; z-index:5;}
+.fifteen {position:absolute; width:100%; border-top:1px solid #eee; z-index:3;}
+.now {position:absolute; width:100%; border-top:1px solid red; z-index:10;}
+.trip {position:absolute; height:45px; width:30px; z-index:7;}
 
 /* Boat styles */
 #boat-list {position:absolute; bottom:0px; left:0px; padding:20px; z-index:50; max-height:100%;}
