@@ -4,11 +4,8 @@ body {position:relative;}
 
 .map {position:absolute; width:calc(100vw - 560px); height:100%; top:0px; left:0px; z-index:30;}
 .sidebar {
-    position:absolute; width:560px; min-height:100%; top:0px; right:0px; overflow-y:scroll;
-    background:white; z-index:40;
-}
-.sidebar::-webkit-scrollbar {
-    display: none;
+    position:absolute; width:560px; height:100%; top:0px; right:0px; overflow-y:scroll;
+    background:white; z-index:40; overflow:hidden;
 }
 
 #leaflet {width:100%; height:100%;}
