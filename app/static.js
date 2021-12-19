@@ -1,6 +1,6 @@
 // Times
 exports.TRIP_MINUTES = 45
-exports.AIS_GAP_MINUTES = 3
+exports.AIS_GAP_MINUTES = 10
 
 // AIS Codes
 exports.AIS_MOORED = 5
