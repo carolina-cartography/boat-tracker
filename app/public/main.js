@@ -8,13 +8,14 @@ const LABELS = [
 ]
 
 const CENTER = [18.16831061820438, -65.54537588810639]
-const ZOOM = 12
+const ZOOM = 13
 const HOURS = 24
 const FUTURE_HOURS = 4
 
 const BOAT_REFRESH_INTERVAL = 15000
 const TRIP_REFRESH_INTERVAL = 60000
 
+const ZOOM_FACTOR = 1.5
 const TRIP_WIDTH = 30
 const TRIP_MINUTES = 45
 
@@ -43,7 +44,7 @@ function initializeMap() {
     // Initialize map
 	map = L.map('leaflet', { 
 		attributionControl:false,  
-		scrollWheelZoom: true
+        zoomControl: false,
 	})
 
     // Initialize markers, add to map
@@ -67,31 +68,8 @@ function initializeMap() {
         marker.addTo(map)
     }
 
-	// Position zoom controls
-	map.zoomControl.setPosition('bottomright')
-
     // Zoom to position
     map.setView(CENTER, ZOOM)
-
-    // Do Leaflet line fix
-    leafletLineFix()
-}
-
-/* 
-* Workaround for 1px lines appearing in some browsers due to fractional transforms
-* and resulting anti-aliasing.
-* https://github.com/Leaflet/Leaflet/issues/3575
-*/
-function leafletLineFix(){
-    var originalInitTile = L.GridLayer.prototype._initTile
-    L.GridLayer.include({
-        _initTile: function (tile) {
-            originalInitTile.call(this, tile);
-            var tileSize = this.getTileSize();
-            tile.style.width = tileSize.x + 1 + 'px';
-            tile.style.height = tileSize.y + 1 + 'px';
-        }
-    });
 }
 
 async function loadTrips() {
@@ -114,7 +92,7 @@ async function loadTrips() {
     let i = 0
     while (i < HOURS) {
         let hourDiv = $("<div>", {class: 'hour'})
-        hourDiv.css("top", `${60*i}px`)
+        hourDiv.css("top", `${ZOOM_FACTOR*60*i}px`)
         hourDiv.text(upperEnd.subtract(i, 'hours').tz("America/Puerto_Rico").format('ha'))
         updatedTimeline.append(hourDiv)
         i++
@@ -122,14 +100,14 @@ async function loadTrips() {
     let j = 0
     while (j < HOURS*4) {
         let fifteenDiv = $("<div>", {class: 'fifteen'})
-        fifteenDiv.css("top", `${15*j}px`)
+        fifteenDiv.css("top", `${ZOOM_FACTOR*15*j}px`)
         updatedTimeline.append(fifteenDiv)
         j++
     }
 
     // Put current time on grid
     let nowDiv = $("<div>", {class: 'now'})
-    nowDiv.css("top", `${(upperEnd.format('X') - now.format('X')) / 60}px`)
+    nowDiv.css("top", `${ZOOM_FACTOR * ((upperEnd.format('X') - now.format('X')) / 60)}px`)
     updatedTimeline.append(nowDiv)
 
     // Get published trips for grid
@@ -157,7 +135,7 @@ function addTripsToTimeline(trips, upperEnd, updatedTimeline) {
                 addedTrips[i] !== undefined && 
                 (trip.startTime - addedTrips[i].startTime) < (TRIP_MINUTES * 60 * (i+1))
             ) {
-                marginLeft += TRIP_WIDTH + 5
+                marginLeft += (TRIP_WIDTH + 5) * ZOOM_FACTOR
             } else {
                 break
             }
@@ -168,7 +146,7 @@ function addTripsToTimeline(trips, upperEnd, updatedTimeline) {
         let tripDiv = $("<div>", {
             class: `trip ${trip.type} ${trip.direction} ${trip.vesselColor}`
         })
-        let tripTop = ((upperEnd.format('X') - trip.startTime) / 60) - TRIP_MINUTES
+        let tripTop = ZOOM_FACTOR * (((upperEnd.format('X') - trip.startTime) / 60) - TRIP_MINUTES)
         tripDiv.css("top", `${tripTop}px`)
         tripDiv.css("margin-left", `${marginLeft}px`)
         updatedTimeline.append(tripDiv)
@@ -210,7 +188,7 @@ function updateMapMarkers(boats) {
         // Setup Leaflet marker
         let icon = L.divIcon({
             html: thisSvg,
-            iconSize: 42,
+            iconSize: 64,
             className: `boat boat-${boat.vesselColor}`
         })
         let marker = L.marker([boat.location.coordinates[1], boat.location.coordinates[0]], {
