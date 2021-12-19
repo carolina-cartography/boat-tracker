@@ -28,22 +28,29 @@ function getBoats(req, res) {
 	// See https://caolan.github.io/async/v3/docs.html#each
 	Async.each(Object.keys(Static.MMSI_LIBRARY), (key, callback) => {
 		let mmsi = Static.MMSI_LIBRARY[key]
-		db.collection("ais")
-			.find({ "mmsi": mmsi })
-			.sort({ "timestamp": -1 })
-			.limit(1)
-			.toArray((err, items) => {
-				if (err) return callback()
-				if (items.length < 1) return callback()
+		try {
+			db.collection("ais")
+				.find({ "mmsi": mmsi })
+				.sort({ "timestamp": -1 })
+				.limit(1)
+				.toArray((err, items) => {
+					if (err) {
+						console.error(err)
+						return callback()
+					}
+					if (items.length < 1) return callback()
 
-				let boat = items[0]
-				boat.vesselId = key
-				boat.vesselName = Static.VESSEL_NAMES[key]
-				boat.vesselColor = Static.VESSEL_COLORS[key]
-				boats.push(boat)
+					let boat = items[0]
+					boat.vesselId = key
+					boat.vesselName = Static.VESSEL_NAMES[key]
+					boat.vesselColor = Static.VESSEL_COLORS[key]
+					boats.push(boat)
 
-				callback()
-			})
+					callback()
+				})
+		} catch(err) {
+			console.error(err)
+		}
 	}, () => {
 		res.status(200).json(boats)
 	})
