@@ -1,3 +1,12 @@
+const VIEQUES_PORT = [18.152423702663565, -65.44335459879278]
+const MOSQUITO_PORT = [18.142601183835318, -65.51320791299133]
+const CEIBA_PORT = [18.2298566338889, -65.61988621771945]
+const LABELS = [
+    { coords: VIEQUES_PORT, title: 'Puerto Mulas' },
+    { coords: CEIBA_PORT, title: 'Terminal de Ceiba' },
+    { coords: MOSQUITO_PORT, title: 'Puerto Mosquito' }
+]
+
 const CENTER = [18.16831061820438, -65.54537588810639]
 const ZOOM = 12
 const HOURS = 24
@@ -42,9 +51,21 @@ function initializeMap() {
     map.addLayer(markers)
 
     // Add Open Street Map layer
-    L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('/tiles/tiles_BT/{z}/{x}/{y}.png', {
 		tms: false
     }).addTo(map)
+
+    // Add labels
+    for (let label of LABELS) {
+        var marker = new L.marker(label.coords, { opacity: 0 })
+        marker.bindTooltip(label.title, {
+            permanent: true,
+            direction: 'center',
+            className: 'map-label', 
+            offset: [0, 0]
+        })
+        marker.addTo(map)
+    }
 
 	// Position zoom controls
 	map.zoomControl.setPosition('bottomright')

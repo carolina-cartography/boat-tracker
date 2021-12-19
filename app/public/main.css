@@ -3,6 +3,11 @@ body {position:relative;}
 * {font-family:'Inconsolata', monospace; box-sizing:border-box;}
 
 .map {position:absolute; width:calc(100vw - 560px); height:100%; top:0px; left:0px; z-index:30;}
+.map-label {
+    background:none; border:0px; box-shadow:none; margin-top:4px;
+    color:white; text-shadow:0px 0px 3px rgba(0,0,0,0.6); font-size:16px; font-weight:bold;
+    white-space:normal; max-width:90px; text-align:center; line-height:18px;
+}
 .sidebar {
     position:absolute; width:560px; height:100%; top:0px; right:0px; overflow-y:scroll;
     background:white; z-index:40; overflow:hidden;
