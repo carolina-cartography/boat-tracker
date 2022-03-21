@@ -180,6 +180,7 @@ async function getTrips(req, res) {
 	return res.status(200).json({ publishedInbound, publishedOutbound, detectedInbound, detectedOutbound })
 }
 
+// Returns array of MMSIs
 async function getMMSIList(req, res) {
 	let mmsiArray = []
 	for (let key of Object.keys(Static.MMSI_LIBRARY)) {
