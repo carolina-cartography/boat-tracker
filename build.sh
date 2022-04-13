@@ -17,6 +17,11 @@ elif [[ "$1" == *"app"* ]]; then
     docker build -t "minicreative/boat-tracker:$TRAVIS_BUILD_NUMBER" ./app
     docker tag minicreative/boat-tracker:$TRAVIS_BUILD_NUMBER minicreative/boat-tracker:latest
     docker push --all-tags minicreative/boat-tracker
+elif [[ "$1" == *"archive-job"* ]]; then
+    echo "Building archive-job..."
+    docker build -t "minicreative/archive-job:$TRAVIS_BUILD_NUMBER" ./archive-job
+    docker tag minicreative/archive-job:$TRAVIS_BUILD_NUMBER minicreative/archive-job:latest
+    docker push --all-tags minicreative/archive-job
 else
     echo "No matching build"
 fi
