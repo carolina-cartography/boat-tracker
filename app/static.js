@@ -42,13 +42,13 @@ exports.VESSEL_NAMES = {
 }
 exports.VESSEL_COLORS = {
     // "mr-mason": "black",
-    "mr-row": "red",
+    "mr-row": "purple",
     "lady-eve": "blue",
     "breezy-point": "yellow",
     "summer-wind": "orange",
     "isleno": "pink",
     "lady-brandi": "black",
-    "isla-bonita": "purple",
+    "isla-bonita": "red",
     "straits-express": "green"
 }
 
