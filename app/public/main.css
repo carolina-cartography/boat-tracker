@@ -61,6 +61,7 @@ body {position:relative;}
 .boat-item.green {background:#2a9d8f;}
 .boat-item.blue {background:#264653;}
 .boat-item.purple {background:#9d4edd;}
+.boat-item.pink {background:#ff758f;}
 
 svg .primary {fill:#eee;}
 .boat.inactive {opacity:0.4;}
@@ -71,3 +72,4 @@ svg .primary {fill:#eee;}
 .boat-green {fill: #2a9d8f;}
 .boat-blue {fill: #264653;}
 .boat-purple {fill: #9d4edd;}
+.boat-pink {background:#ff758f;}

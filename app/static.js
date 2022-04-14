@@ -15,7 +15,8 @@ exports.MMSI_LIBRARY = {
     "summer-wind": "368038080",
     "isleno": "367617270",
     "lady-brandi": "367481060",
-    "isla-bonita": "367547820"
+    "isla-bonita": "367547820",
+    "straits-express": "368054610"
 }
 exports.VESSEL_ID_LIBRARY = {
   // "367481080": "mr-mason",
@@ -25,7 +26,8 @@ exports.VESSEL_ID_LIBRARY = {
   "368038080": "summer-wind",
   "367617270": "isleno",
   "367481060": "lady-brandi",
-  "367547820": "isla-bonita"
+  "367547820": "isla-bonita",
+  "368054610": "straits-express"
 }
 exports.VESSEL_NAMES = {
     // "mr-mason": "Mr. Mason",
@@ -35,7 +37,8 @@ exports.VESSEL_NAMES = {
     "summer-wind": "Summer Wind",
     "isleno": "Isleño",
     "lady-brandi": "Lady Brandi",
-    "isla-bonita": "Isla Bonita"
+    "isla-bonita": "Isla Bonita",
+    "straits-express": "Straits Express"
 }
 exports.VESSEL_COLORS = {
     // "mr-mason": "black",
@@ -43,9 +46,10 @@ exports.VESSEL_COLORS = {
     "lady-eve": "blue",
     "breezy-point": "yellow",
     "summer-wind": "orange",
-    "isleno": "green",
+    "isleno": "pink",
     "lady-brandi": "black",
-    "isla-bonita": "purple"
+    "isla-bonita": "purple",
+    "straits-express": "green"
 }
 
 // Geographies
