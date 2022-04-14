@@ -22,6 +22,8 @@ body {position:relative;}
 .trip.yellow {border-color:#e9c46a; background:#e9c46a;}
 .trip.green {border-color:#2a9d8f; background:#2a9d8f;}
 .trip.blue {border-color:#264653; background:#264653;}
+.trip.purple {border-color:#9d4edd; background:#9d4edd;}
+.trip.pink {border-color:#ff758f; background:#ff758f;}
 .trip.published, .legend i.published {border-style:solid; border-width:6px; background:none;}
 .trip.detected, .legend i.detected {border:none;}
 
